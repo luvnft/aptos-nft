@@ -1,7 +1,7 @@
 import { create } from "ipfs-http-client";
 
-const projectId = process.env.INFURA_PROJECT_ID;
-const projectSecret = process.env.INFURA_PROJECT_SECRET;
+const projectId = "2Xi31agz7M8y7BuefMlhbswjv3L";
+const projectSecret = "1d72178ee211645564992adfd6ddc6f2";
 
 
 // Configure the IPFS client
@@ -21,20 +21,20 @@ type CollectionMetadata = {
   image: string;
   external_url: string;
 };
-type ImageAttribute = {
-  trait_type: string;
-  value: string;
-};
-type ImageMetadata = {
-  name: string;
-  description: string;
-  image: string;
-  external_url: string;
-  attributes: ImageAttribute[];
-};
+// type ImageAttribute = {
+//   trait_type: string;
+//   value: string;
+// };
+// type ImageMetadata = {
+//   name: string;
+//   description: string;
+//   image: string;
+//   external_url: string;
+//   attributes: ImageAttribute[];
+// };
 
 export const uploadCollectionData = async (
-  aptosWallet: any,
+  // aptosWallet: any,
   fileList: FileList,
 ): Promise<{
   collectionName: string;
@@ -82,7 +82,7 @@ export const uploadCollectionData = async (
   }
 
   // Upload images and metadata to IPFS
-  const ipfsUploads: { path: string; cid: string }[] = [];
+  // const ipfsUploads: { path: string; cid: string }[] = [];
   const uploadFileToIpfs = async (file: File) => {
     const added = await ipfs.add(file);
     return added.path;
@@ -93,16 +93,16 @@ export const uploadCollectionData = async (
   const updatedCollectionMetadata: CollectionMetadata = JSON.parse(await collectionMetadataFile.text());
   updatedCollectionMetadata.image = `ipfs://${imageFolderCid}`;
 
-  const updatedImageMetadatas = await Promise.all(
-    nftImageMetadatas.map(async (file) => {
-      const metadata: ImageMetadata = JSON.parse(await file.text());
-      const imageFile = imageFiles.find((img) => img.name === file.name.replace("json", `${mediaExt}`));
-      const imageCid = await uploadFileToIpfs(imageFile!);
-      metadata.image = `ipfs://${imageCid}`;
-      const updatedMetadata = new File([JSON.stringify(metadata)], file.name, { type: file.type });
-      return updatedMetadata;
-    }),
-  );
+  // const updatedImageMetadatas = await Promise.all(
+  //   nftImageMetadatas.map(async (file) => {
+  //     const metadata: ImageMetadata = JSON.parse(await file.text());
+  //     const imageFile = imageFiles.find((img) => img.name === file.name.replace("json", `${mediaExt}`));
+  //     const imageCid = await uploadFileToIpfs(imageFile!);
+  //     metadata.image = `ipfs://${imageCid}`;
+  //     const updatedMetadata = new File([JSON.stringify(metadata)], file.name, { type: file.type });
+  //     return updatedMetadata;
+  //   }),
+  // );
 
   const updatedMetadataCid = await uploadFileToIpfs(
     new File([JSON.stringify(updatedCollectionMetadata)], "collection.json", {
