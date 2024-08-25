@@ -20,7 +20,7 @@ import { createCollection } from "@/entry-functions/create_collection";
 
 export function CreateCollection() {
   // Wallet Adapter provider
-  const aptosWallet = useWallet();
+  // const aptosWallet = useWallet();
   const { account, signAndSubmitTransaction } = useWallet();
 
   const navigate = useNavigate();
@@ -80,7 +80,7 @@ export function CreateCollection() {
 
       // Upload collection files to Irys
       const { collectionName, collectionDescription, maxSupply, projectUri } = await uploadCollectionData(
-        aptosWallet,
+        // aptosWallet,
         files,
       );
 
