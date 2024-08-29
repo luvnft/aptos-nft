@@ -1,7 +1,7 @@
 // External packages
 import { useRef, useState } from "react";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 // Internal utils
 import { aptosClient } from "@/utils/aptosClient";
 import { uploadCollectionData } from "@/utils/assetsUploader";
@@ -127,7 +127,6 @@ export function CreateCollection() {
 
       <div className="flex flex-col md:flex-row items-start justify-between px-4 py-2 gap-4 max-w-screen-xl mx-auto">
         <div className="w-full md:w-2/3 flex flex-col gap-y-4 order-2 md:order-1">
-
           <UploadSpinner on={isUploading} />
 
           <Card>
@@ -271,16 +270,6 @@ export function CreateCollection() {
               </>
             }
           />
-        </div>
-        <div className="w-full md:w-1/3 order-1 md:order-2">
-          <Card>
-            <CardHeader className="body-md-semibold">Learn More</CardHeader>
-            <CardContent>
-              <Link to="https://aptos.dev/standards/digital-asset" className="body-sm underline" target="_blank">
-                Find out more about Digital Assets on Aptos
-              </Link>
-            </CardContent>
-          </Card>
         </div>
       </div>
     </>
