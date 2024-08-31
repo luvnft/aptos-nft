@@ -19,6 +19,9 @@ module launchpad_addr::launchpad {
     use minter::token_components;
     use minter::mint_stage;
     use minter::collection_components;
+    use std::debug;
+
+    use aptos_std::table::{Self, Table};
 
     /// Only admin can update creator
     const EONLY_ADMIN_CAN_UPDATE_CREATOR: u64 = 1;
@@ -39,8 +42,6 @@ module launchpad_addr::launchpad {
     /// Mint limit per address must be set for stage
     const EMINT_LIMIT_PER_ADDR_MUST_BE_SET_FOR_STAGE: u64 = 10;
 
-    /// Default to mint 0 amount to creator when creating collection
-    const DEFAULT_PRE_MINT_AMOUNT: u64 = 0;
     /// Default mint fee per NFT denominated in oapt (smallest unit of APT, i.e. 1e-8 APT)
     const DEFAULT_MINT_FEE_PER_NFT: u64 = 0;
 
@@ -61,7 +62,6 @@ module launchpad_addr::launchpad {
         name: String,
         description: String,
         uri: String,
-        pre_mint_amount: Option<u64>,
         allowlist: Option<vector<address>>,
         allowlist_start_time: Option<u64>,
         allowlist_end_time: Option<u64>,
@@ -133,6 +133,19 @@ module launchpad_addr::launchpad {
         mint_fee_collector_addr: address,
     }
 
+    struct CombinationRule has store, drop {
+        main_collection: Object<Collection>,
+        main_token: String,
+        secondary_collection: Object<Collection>,
+        secondary_token: String,
+        result_token: String,
+    }
+
+    struct CombinationRules has key {
+        rules: vector<CombinationRule>,
+    }
+
+
     /// If you deploy the module under an object, sender is the object's signer
     /// If you deploy the module under your own account, sender is your account's signer
     fun init_module(sender: &signer) {
@@ -191,7 +204,6 @@ module launchpad_addr::launchpad {
         max_supply: u64,
         royalty_percentage: Option<u64>,
         // Pre mint amount to creator
-        pre_mint_amount: Option<u64>,
         // Allowlist of addresses that can mint NFTs in allowlist stage
         allowlist: Option<vector<address>>,
         allowlist_start_time: Option<u64>,
@@ -206,7 +218,7 @@ module launchpad_addr::launchpad {
         public_mint_limit_per_addr: Option<u64>,
         // Public mint fee per NFT denominated in oapt (smallest unit of APT, i.e. 1e-8 APT)
         public_mint_fee_per_nft: Option<u64>,
-    ) acquires Registry, CollectionConfig, CollectionOwnerObjConfig {
+    ) acquires Registry, CollectionConfig {
         let sender_addr = signer::address_of(sender);
 
         let royalty = royalty(&mut royalty_percentage, sender_addr);
@@ -237,6 +249,11 @@ module launchpad_addr::launchpad {
         move_to(collection_obj_signer, CollectionConfig {
             mint_fee_per_nft_by_stages: simple_map::new(),
             collection_owner_obj,
+        });
+
+        // TODO: where to store this really?
+        move_to(sender, CombinationRules {
+            rules: vector::empty(),
         });
 
         assert!(
@@ -282,7 +299,6 @@ module launchpad_addr::launchpad {
             name,
             description,
             uri,
-            pre_mint_amount,
             allowlist,
             allowlist_start_time,
             allowlist_end_time,
@@ -295,10 +311,7 @@ module launchpad_addr::launchpad {
         });
 
         let nft_objs = vector[];
-        for (i in 0..*option::borrow_with_default(&pre_mint_amount, &DEFAULT_PRE_MINT_AMOUNT)) {
-            let nft_obj = mint_nft_internal(sender_addr, collection_obj);
-            vector::push_back(&mut nft_objs, nft_obj);
-        };
+        let nft_name = string::utf8(b"PREMINT NAME");
 
         event::emit(BatchPreMintNftsEvent {
             recipient_addr: sender_addr,
@@ -310,6 +323,7 @@ module launchpad_addr::launchpad {
     /// Mint NFT, anyone with enough mint fee and has not reached mint limit can mint FA
     /// If we are in allowlist stage, only addresses in allowlist can mint FA
     public entry fun mint_nft(
+        token_name: String,
         sender: &signer,
         collection_obj: Object<Collection>,
         amount: u64,
@@ -326,7 +340,7 @@ module launchpad_addr::launchpad {
 
         let nft_objs = vector[];
         for (i in 0..amount) {
-            let nft_obj = mint_nft_internal(sender_addr, collection_obj);
+            let nft_obj = mint_nft_internal(token_name, sender_addr, collection_obj);
             vector::push_back(&mut nft_objs, nft_obj);
         };
 
@@ -344,10 +358,11 @@ module launchpad_addr::launchpad {
     public entry fun combine_nft(
         sender: &signer,
         main_collection_obj: Object<Collection>,
+        secondary_collection_obj: Object<Collection>,
         main_nft: Object<Token>, 
-        other_nft: Object<Token>,
+        secondary_nft: Object<Token>,
     ) acquires CollectionConfig, CollectionOwnerObjConfig
-    , TokenController 
+    , TokenController, CombinationRules
     {
 
         // check if sender is owner of both NFTs
@@ -365,7 +380,21 @@ module launchpad_addr::launchpad {
         let description = token::description(main_nft);
         let name = token::name(main_nft);
 
-        // TODO: Check if this is a valid combination
+ // AVH: 
+        // Check if this is a valid combination
+        let combination_rules = borrow_global<CombinationRules>(@launchpad_addr);
+        let combination = CombinationRule {
+            main_collection: main_collection_obj,
+            main_token: token::name(main_nft),
+            secondary_collection: secondary_collection_obj,
+            secondary_token: token::name(secondary_nft),
+            result_token: string::utf8(b"FireSword"), // TODO: get this from somewhere
+        };
+        
+        debug::print(&combination_rules.rules);
+        
+        debug::print(&combination);
+        assert!(vector::contains(&combination_rules.rules, &combination), 1312);
 
         // Create new NFT
         // TODO: This should change the metadata
@@ -394,15 +423,45 @@ module launchpad_addr::launchpad {
         token::burn(burn_ref);
 
         // Burn other NFT
-        let other_token_address = object::object_address(&other_nft);
+        let secondary_token_address = object::object_address(&secondary_nft);
         let TokenController {
             burn_ref,
             extend_ref: _, // destroy the extend ref
             mutator_ref: _, // destroy the mutator ref too
-        } = move_from<TokenController>(other_token_address);
+        } = move_from<TokenController>(secondary_token_address);
         token::burn(burn_ref);
     }
     
+    public entry fun add_combination_rule(
+        sender: &signer,
+        main_collection: Object<Collection>,
+        main_token: String,
+        secondary_collection: Object<Collection>,
+        secondary_token: String,
+        result_token: String
+    ) acquires CombinationRules {
+        let account = signer::address_of(sender);
+
+        // TODO: store rules somewhere else
+        let combination_rules = borrow_global_mut<CombinationRules>(@launchpad_addr);
+
+        // todo check if account is owner of main_collection
+        // assert!(object::owner(main_collection) == account, 999);
+
+
+        let new_rule = CombinationRule {
+            main_collection,
+            main_token,
+            secondary_collection,
+            secondary_token,
+            result_token,
+        };
+
+
+        // if (!vector::contains(&combination_rules.rules, new_rule)) {
+            vector::push_back(&mut combination_rules.rules, new_rule);
+        // }
+    }
 
 
     // ================================= View  ================================= //
@@ -612,6 +671,7 @@ module launchpad_addr::launchpad {
     }
 
 fun mint_nft_internal(
+    token_name: String,
     sender_addr: address,
     collection_obj: Object<Collection>,
 ) : Object<Token> acquires CollectionConfig, CollectionOwnerObjConfig {
@@ -634,7 +694,7 @@ fun mint_nft_internal(
         // placeholder value, please read description from json metadata in offchain storage
         string_utils::to_string(&next_nft_id),
         // placeholder value, please read name from json metadata in offchain storage
-        string_utils::to_string(&next_nft_id),
+        token_name, // token name
         royalty::get(collection_obj),
         nft_metadata_uri,
     );
@@ -712,7 +772,6 @@ fun mint_nft_internal(
             string::utf8(b"https://gateway.irys.xyz/manifest_id/collection.json"),
             10,
             option::some(10),
-            option::some(3),
             option::some(vector[user1_addr]),
             option::some(timestamp::now_seconds()),
             option::some(timestamp::now_seconds() + 100),
@@ -725,15 +784,16 @@ fun mint_nft_internal(
         );
         let registry = get_registry();
         let collection_1 = *vector::borrow(&registry, vector::length(&registry) - 1);
-        assert!(collection::count(collection_1) == option::some(3), 1);
+        assert!(collection::count(collection_1) == option::some(0), 1);
 
         let mint_fee = get_mint_fee(collection_1, string::utf8(ALLOWLIST_MINT_STAGE_CATEGORY), 1);
         aptos_coin::mint(aptos_framework, user1_addr, mint_fee);
+        
+        let nft_name = string::utf8(b"Sword");
+        mint_nft(nft_name, user1, collection_1, 1);
 
-        mint_nft(user1, collection_1, 1);
-
-        let nft = mint_nft_internal(user1_addr, collection_1);
-        assert!(token::uri(nft) == string::utf8(b"https://gateway.irys.xyz/manifest_id/5.json"), 2);
+        let nft = mint_nft_internal(nft_name , user1_addr, collection_1);
+        assert!(token::uri(nft) == string::utf8(b"https://gateway.irys.xyz/manifest_id/2.json"), 2);
 
         let active_or_next_stage = get_active_or_next_mint_stage(collection_1);
         assert!(active_or_next_stage == option::some(string::utf8(ALLOWLIST_MINT_STAGE_CATEGORY)), 3);
@@ -774,4 +834,123 @@ fun mint_nft_internal(
         coin::destroy_burn_cap(burn_cap);
         coin::destroy_mint_cap(mint_cap);
     }
+
+
+    #[test(aptos_framework = @0x1, sender = @launchpad_addr, user1 = @0x200, user2 = @0x201)]
+    fun test_combine_add_rules(
+        aptos_framework: &signer,
+        sender: &signer,
+        user1: &signer,
+        user2: &signer,
+    ) acquires Registry,  CollectionConfig, CollectionOwnerObjConfig, CombinationRules, TokenController {
+
+        let sword = string::utf8(b"Sword");
+        let fire = string::utf8(b"Fire");
+        let firesword = string::utf8(b"FireSword");
+
+        let (burn_cap, mint_cap) = aptos_coin::initialize_for_test(aptos_framework);
+
+        let user1_addr = signer::address_of(user1);
+        let user2_addr = signer::address_of(user2);
+
+        // current timestamp is 0 after initialization
+        timestamp::set_time_has_started_for_testing(aptos_framework);
+        account::create_account_for_test(user1_addr);
+        account::create_account_for_test(user2_addr);
+        coin::register<AptosCoin>(user1);
+
+        init_module(sender);
+
+        // create first collection
+
+        create_collection(
+            sender,
+            string::utf8(b"description"),
+            string::utf8(b"weapons"),
+            string::utf8(b"https://gateway.irys.xyz/manifest_id/collection.json"),
+            10,
+            option::some(10),
+            option::some(vector[user1_addr]),
+            option::some(timestamp::now_seconds()),
+            option::some(timestamp::now_seconds() + 100),
+            option::some(3),
+            option::some(5),
+            option::some(timestamp::now_seconds() + 200),
+            option::some(timestamp::now_seconds() + 300),
+            option::some(2),
+            option::some(10),
+        );
+
+        // create second collection
+
+        create_collection(
+            user1,
+            string::utf8(b"description"),
+            string::utf8(b"elements"),
+            string::utf8(b"https://gateway.irys.xyz/manifest_id/collection.json"),
+            10,
+            option::some(10),
+            option::some(vector[user1_addr]),
+            option::some(timestamp::now_seconds()),
+            option::some(timestamp::now_seconds() + 100),
+            option::some(3),
+            option::some(5),
+            option::some(timestamp::now_seconds() + 200),
+            option::some(timestamp::now_seconds() + 300),
+            option::some(2),
+            option::some(10),
+        );
+
+        let registry = get_registry();
+        let collection_1 = *vector::borrow(&registry, 0);
+        let nft1_1 = mint_nft_internal(sword , user1_addr, collection_1);
+        assert!(token::uri(nft1_1) == string::utf8(b"https://gateway.irys.xyz/manifest_id/1.json"), 1);
+        
+        let collection_2 = *vector::borrow(&registry, 1);
+
+        let mint_fee = get_mint_fee(collection_2, string::utf8(ALLOWLIST_MINT_STAGE_CATEGORY), 1);
+        aptos_coin::mint(aptos_framework, user1_addr, mint_fee);
+        
+        let nft2_1 = mint_nft_internal(fire , user1_addr, collection_2);
+        // assert!(token::uri(nft2_1) == string::utf8(b"https://gateway.irys.xyz/manifest_id/1.json"), 1);
+
+        add_combination_rule(sender, collection_1, sword, collection_2, fire, firesword);
+
+        // assert rule is created
+        
+        // Combine nfts
+        combine_nft(user1, collection_1, collection_2, nft1_1, nft2_1);
+
+        // // bump global timestamp to 150 so allowlist stage is over but public mint stage is not started yet
+        // timestamp::update_global_time_for_test_secs(150);
+        // let active_or_next_stage = get_active_or_next_mint_stage(collection_1);
+        // assert!(active_or_next_stage == option::some(string::utf8(PUBLIC_MINT_MINT_STAGE_CATEGORY)), 6);
+        // let (start_time, end_time) = get_mint_stage_start_and_end_time(
+        //     collection_1,
+        //     string::utf8(PUBLIC_MINT_MINT_STAGE_CATEGORY)
+        // );
+        // assert!(start_time == 200, 7);
+        // assert!(end_time == 300, 8);
+
+        // // bump global timestamp to 250 so public mint stage is active
+        // timestamp::update_global_time_for_test_secs(250);
+        // let active_or_next_stage = get_active_or_next_mint_stage(collection_1);
+        // assert!(active_or_next_stage == option::some(string::utf8(PUBLIC_MINT_MINT_STAGE_CATEGORY)), 9);
+        // let (start_time, end_time) = get_mint_stage_start_and_end_time(
+        //     collection_1,
+        //     string::utf8(PUBLIC_MINT_MINT_STAGE_CATEGORY)
+        // );
+        // assert!(start_time == 200, 10);
+        // assert!(end_time == 300, 11);
+
+        // // bump global timestamp to 350 so public mint stage is over
+        // timestamp::update_global_time_for_test_secs(350);
+        // let active_or_next_stage = get_active_or_next_mint_stage(collection_1);
+        // assert!(active_or_next_stage == option::none(), 12);
+
+        coin::destroy_burn_cap(burn_cap);
+        coin::destroy_mint_cap(mint_cap);
+    }
+
+    
 }
