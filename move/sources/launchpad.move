@@ -41,6 +41,8 @@ module launchpad_addr::launchpad {
     const EEND_TIME_MUST_BE_SET_FOR_STAGE: u64 = 9;
     /// Mint limit per address must be set for stage
     const EMINT_LIMIT_PER_ADDR_MUST_BE_SET_FOR_STAGE: u64 = 10;
+    /// Combination does not exist in the rules
+    const EINCORRECT_COMBINATION: u64 = 11;
 
     /// Default mint fee per NFT denominated in oapt (smallest unit of APT, i.e. 1e-8 APT)
     const DEFAULT_MINT_FEE_PER_NFT: u64 = 0;
@@ -355,7 +357,7 @@ module launchpad_addr::launchpad {
     /// Combine NFT, anyone with to eligible NFT's can combine them into a new NFT.
     /// The main NFT (TODO: Or collection?) metadata contains information about possible combinations and outcomes.
     /// Burns the main_nft and other_nft. Mints a new NFT in the same collection as main_nft (with same tokenId)
-    public entry fun combine_nft(
+    pub entry fun combine_nft(
         sender: &signer,
         main_collection_obj: Object<Collection>,
         secondary_collection_obj: Object<Collection>,
@@ -380,7 +382,6 @@ module launchpad_addr::launchpad {
         let description = token::description(main_nft);
         let name = token::name(main_nft);
 
- // AVH: 
         // Check if this is a valid combination
         let combination_rules = borrow_global<CombinationRules>(@launchpad_addr);
         let combination = CombinationRule {
@@ -391,27 +392,21 @@ module launchpad_addr::launchpad {
             result_token: string::utf8(b"FireSword"), // TODO: get this from somewhere
         };
         
-        debug::print(&combination_rules.rules);
-        
-        debug::print(&combination);
-        assert!(vector::contains(&combination_rules.rules, &combination), 1312);
+        assert!(vector::contains(&combination_rules.rules, &combination), EINCORRECT_COMBINATION);
 
         // Create new NFT
         // TODO: This should change the metadata
         let nft_obj_constructor_ref = &token::create(
             main_collection_owner_obj_signer,
             collection::name(main_collection_obj),
-            // placeholder value, please read description from json metadata in offchain storage
             description,
-            // placeholder value, please read name from json metadata in offchain storage
-            name,
+            combination.result_token, // token name
             royalty::get(main_collection_obj),
             main_uri,
         );
         token_components::create_refs(nft_obj_constructor_ref);
         let nft_obj: Object<Token> = object::object_from_constructor_ref(nft_obj_constructor_ref);
         object::transfer(main_collection_owner_obj_signer, nft_obj, signer::address_of(sender));
-
         
         // Burn main NFT
         let main_token_address = object::object_address(&main_nft);
@@ -430,6 +425,12 @@ module launchpad_addr::launchpad {
             mutator_ref: _, // destroy the mutator ref too
         } = move_from<TokenController>(secondary_token_address);
         token::burn(burn_ref);
+
+        event::emit(CombineNftsEvent {
+            old_nft_objs: vector[main_nft, secondary_nft],
+            new_nft_obj: nft_obj,
+            recipient_addr: signer::address_of(sender),
+        });
     }
     
     public entry fun add_combination_rule(
@@ -912,41 +913,23 @@ fun mint_nft_internal(
         aptos_coin::mint(aptos_framework, user1_addr, mint_fee);
         
         let nft2_1 = mint_nft_internal(fire , user1_addr, collection_2);
-        // assert!(token::uri(nft2_1) == string::utf8(b"https://gateway.irys.xyz/manifest_id/1.json"), 1);
 
         add_combination_rule(sender, collection_1, sword, collection_2, fire, firesword);
 
         // assert rule is created
+
+        // Check names of the NFTS we will combine before combining
+        assert!(token::name(nft1_1) == sword, 2);
+        assert!(token::name(nft2_1) == fire, 3);
         
         // Combine nfts
         combine_nft(user1, collection_1, collection_2, nft1_1, nft2_1);
 
-        // // bump global timestamp to 150 so allowlist stage is over but public mint stage is not started yet
-        // timestamp::update_global_time_for_test_secs(150);
-        // let active_or_next_stage = get_active_or_next_mint_stage(collection_1);
-        // assert!(active_or_next_stage == option::some(string::utf8(PUBLIC_MINT_MINT_STAGE_CATEGORY)), 6);
-        // let (start_time, end_time) = get_mint_stage_start_and_end_time(
-        //     collection_1,
-        //     string::utf8(PUBLIC_MINT_MINT_STAGE_CATEGORY)
-        // );
-        // assert!(start_time == 200, 7);
-        // assert!(end_time == 300, 8);
+        // TODO: Check if old NFTs are burned
 
-        // // bump global timestamp to 250 so public mint stage is active
-        // timestamp::update_global_time_for_test_secs(250);
-        // let active_or_next_stage = get_active_or_next_mint_stage(collection_1);
-        // assert!(active_or_next_stage == option::some(string::utf8(PUBLIC_MINT_MINT_STAGE_CATEGORY)), 9);
-        // let (start_time, end_time) = get_mint_stage_start_and_end_time(
-        //     collection_1,
-        //     string::utf8(PUBLIC_MINT_MINT_STAGE_CATEGORY)
-        // );
-        // assert!(start_time == 200, 10);
-        // assert!(end_time == 300, 11);
+        // TODO: Check if the new NFT is created
+        // assert!(token::name(new_nft) == firesword, 13122);
 
-        // // bump global timestamp to 350 so public mint stage is over
-        // timestamp::update_global_time_for_test_secs(350);
-        // let active_or_next_stage = get_active_or_next_mint_stage(collection_1);
-        // assert!(active_or_next_stage == option::none(), 12);
 
         coin::destroy_burn_cap(burn_cap);
         coin::destroy_mint_cap(mint_cap);
