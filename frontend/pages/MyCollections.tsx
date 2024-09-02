@@ -3,11 +3,11 @@ import { GetCollectionDataResponse } from "@aptos-labs/ts-sdk";
 // Internal components
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { LaunchpadHeader } from "@/components/LaunchpadHeader";
-import { Image } from "@/components/ui/image";
 // Internal hooks
 import { useGetCollections } from "@/hooks/useGetCollections";
 // Internal constants
 import { NETWORK } from "@/constants";
+import { IpfsImage } from "@/components/IpfsImage";
 
 export function MyCollections() {
   const collections: Array<GetCollectionDataResponse> = useGetCollections();
@@ -35,11 +35,9 @@ export function MyCollections() {
                 <TableRow key={collection?.collection_id}>
                   <TableCell className="font-medium">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <Image
-                        src={collection?.cdn_asset_uris?.cdn_image_uri ?? ""}
-                        rounded
-                        className="w-10 h-10 bg-gray-100 shrink-0"
-                      />
+                      {collection?.cdn_asset_uris?.asset_uri && (
+                        <IpfsImage ipfsUri={collection?.cdn_asset_uris?.asset_uri} />
+                      )}
                       <span>{collection?.collection_name}</span>
                     </div>
                   </TableCell>

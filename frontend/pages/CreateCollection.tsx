@@ -78,7 +78,7 @@ export function CreateCollection() {
       // Set internal isUploading state
       setIsUploading(true);
 
-      // Upload collection files to Irys
+      // Upload collection files to IPFS
       const { collectionName, collectionDescription, maxSupply, projectUri } = await uploadCollectionData(
         // aptosWallet,
         files,
@@ -92,7 +92,6 @@ export function CreateCollection() {
           projectUri,
           maxSupply,
           royaltyPercentage,
-          preMintAmount,
           allowList: undefined,
           allowListStartDate: undefined,
           allowListEndDate: undefined,
@@ -110,8 +109,14 @@ export function CreateCollection() {
         transactionHash: response.hash,
       });
 
-      // Once the transaction has been successfully commited to chain, navigate to the `my-collection` page
+      // Once the transaction has been successfully commited to chain,
       if (committedTransactionResponse.success) {
+        // mint NFTs immediately for the creator if preMintAmount is set
+        if (preMintAmount) {
+          // TODO
+        }
+
+        // navigate to the `my-collection` page
         navigate(`/my-collections`, { replace: true });
       }
     } catch (error) {
@@ -131,7 +136,7 @@ export function CreateCollection() {
 
           <Card>
             <CardHeader>
-              <CardDescription>Uploads collection files to Irys, a decentralized storage</CardDescription>
+              <CardDescription>Uploads collection files to IPFS</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col items-start justify-between">
