@@ -448,26 +448,6 @@ module launchpad_addr::launchpad {
         });
     }
 
-    /// Equip NFT
-    /// Sends the equipment NFT to the main_nft object.
-    public entry fun equip_nft(
-        sender: &signer,
-        main_nft: Object<Token>, 
-        equipment_nft: Object<Token>,
-    ) 
-    // acquires CollectionConfig, CollectionOwnerObjConfig
-    // , TokenController
-    {
-        let object_address = object::object_address(&main_nft);
-
-        // TODO: Check if main_nft can requip the equipment_nft.
-        // Use similar logic to add_combination_rule
-
-        // TODO: Check if main_nft is already equiped with NFT from the same collection
-
-        object::transfer(sender, equipment_nft, object_address);
-    }
-
     public entry fun evolve_nft(
         sender: &signer,
         main_collection: Object<Collection>,
@@ -500,7 +480,6 @@ module launchpad_addr::launchpad {
         let result_token = *simple_map::borrow(&evolution_rules.results, &evolution);
 
         // Create new NFT
-        // TODO: This should change the metadata
         let nft_obj_constructor_ref = &token::create(
             main_collection_owner_obj_signer,
             collection::name(main_collection),
@@ -537,6 +516,7 @@ module launchpad_addr::launchpad {
         result_token: String
     ) acquires EvolutionRules {
 
+        // TODO: Check is sender is owner of main_collection
         let evolution_rules = borrow_global_mut<EvolutionRules>(@launchpad_addr);
 
         let new_rule = EvolutionRule {
@@ -1132,15 +1112,6 @@ fun mint_nft_internal(
         
         // Combine nfts
         combine_nft(user1, collection_1, collection_2, nft1_1, nft2_1);
-
-        // TODO: Check if old NFTs are burned
-
-        // TODO: Check if the new NFT is created
-        // assert!(token::name(new_nft) == firesword, 13122);
-
-
-        coin::destroy_burn_cap(burn_cap);
-        coin::destroy_mint_cap(mint_cap);
     }
 
 
@@ -1206,10 +1177,10 @@ fun mint_nft_internal(
         // Combine nfts
         evolve_nft(user1, collection, nft_baby, big);
 
-        // TODO: Check if old NFTs are burned
+        // TODO: Check if old NFT is burned
 
         // TODO: Check if the new NFT is created
-        // assert!(token::name(new_nft) == firesword, 13122);
+        
 
 
         coin::destroy_burn_cap(burn_cap);
