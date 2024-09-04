@@ -1,0 +1,8 @@
+---
+profiles:
+  default:
+    network: Custom
+    private_key: "0xb5a07d95b3574dec89d19418209c826d9e0ea8bc10f940ca71fda57ab5e9380d"
+    public_key: "0xcf84f9897c9091ad6d34b2ebd56f6815cded59bb85ff4e93cfd8efca71b38b12"
+    account: def8a64cc21403856be63f9f9a14de737d7b7ba601afd5c63227fcb32859217b
+    rest_url: "https://aptos.testnet.suzuka.movementlabs.xyz/v1"
