@@ -31,7 +31,12 @@ The Move NFT Studio provides a one stop shop for dynamic and composable NFT's. C
 | ------------------------------- | -------------------------------- |
 | ![Screenshot](public/screenshots/placeholder.png) | ![Screenshot](public/screenshots/placeholder.png) |
 
-
+## Next steps
+This hackathon project is a proof of concept for the Move NFT Studio. We plan to keep building and add more features, so Move NFT Studio will become the platform where creators and holders can do everything they want with their NFT's. Features that we want to add:
+- In NFT details page, display all NFT's held by this NFT
+- Equiping logic for NFT owned by NFT
+- Evolution logic
+- NFT marketplace
 
 ## Links
 - [Deployment on Movement Testnet](https://explorer.movementnetwork.xyz/account/0xdef8a64cc21403856be63f9f9a14de737d7b7ba601afd5c63227fcb32859217b/modules/code/launchpad?network=testnet)
