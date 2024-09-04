@@ -19,9 +19,6 @@ module launchpad_addr::launchpad {
     use minter::token_components;
     use minter::mint_stage;
     use minter::collection_components;
-    use std::debug;
-
-    use aptos_std::table::{Self, Table};
 
     /// Only admin can update creator
     const EONLY_ADMIN_CAN_UPDATE_CREATOR: u64 = 1;
@@ -45,6 +42,10 @@ module launchpad_addr::launchpad {
     const EINCORRECT_COMBINATION: u64 = 11;
     /// Evolution does not exist in the rules
     const EINCORRECT_EVOLUTION: u64 = 12;
+    /// Combination already exists in the rules
+    const EDUPLICATE_COMBINATION: u64 = 13;
+    /// Only admin can add a new rule
+    const EONLY_ADMIN_CAN_CREATE_RULE: u64 = 14;
 
     /// Default mint fee per NFT denominated in oapt (smallest unit of APT, i.e. 1e-8 APT)
     const DEFAULT_MINT_FEE_PER_NFT: u64 = 0;
@@ -149,11 +150,11 @@ module launchpad_addr::launchpad {
         main_token: String,
         secondary_collection: Object<Collection>,
         secondary_token: String,
-        result_token: String,
     }
 
+
     struct CombinationRules has key {
-        rules: vector<CombinationRule>,
+        results: SimpleMap<CombinationRule, String>,
     }
 
 
@@ -274,9 +275,9 @@ module launchpad_addr::launchpad {
 
         // TODO: where to store this really?
         move_to(sender, CombinationRules {
-            rules: vector::empty(),
+            results: simple_map::create(),
         });
-        
+
         // TODO: where to store this really?
         move_to(sender, EvolutionRules {
             rules: vector::empty(),
@@ -336,14 +337,6 @@ module launchpad_addr::launchpad {
             public_mint_fee_per_nft,
         });
 
-        let nft_objs = vector[];
-        let nft_name = string::utf8(b"PREMINT NAME");
-
-        event::emit(BatchPreMintNftsEvent {
-            recipient_addr: sender_addr,
-            collection_obj,
-            nft_objs,
-        });
     }
 
     /// Mint NFT, anyone with enough mint fee and has not reached mint limit can mint FA
@@ -387,7 +380,6 @@ module launchpad_addr::launchpad {
         secondary_collection_obj: Object<Collection>,
         main_nft: Object<Token>, 
         secondary_nft: Object<Token>,
-        desired_result: String,
     ) acquires CollectionConfig, CollectionOwnerObjConfig
     , TokenController, CombinationRules
     {
@@ -405,7 +397,6 @@ module launchpad_addr::launchpad {
         // This copies the current description ane name from the main_nft
         // TODO: This should be read from the metadata of the main_nft
         let description = token::description(main_nft);
-        let name = token::name(main_nft);
 
         // Check if this is a valid combination
         let combination_rules = borrow_global<CombinationRules>(@launchpad_addr);
@@ -414,18 +405,18 @@ module launchpad_addr::launchpad {
             main_token: token::name(main_nft),
             secondary_collection: secondary_collection_obj,
             secondary_token: token::name(secondary_nft),
-            result_token: desired_result,
         };
         
-        assert!(vector::contains(&combination_rules.rules, &combination), EINCORRECT_COMBINATION);
+        assert!(simple_map::contains_key(&combination_rules.results, &combination), EINCORRECT_COMBINATION);
 
+        let result_token = *simple_map::borrow(&combination_rules.results, &combination);
         // Create new NFT
         // TODO: This should change the metadata
         let nft_obj_constructor_ref = &token::create(
             main_collection_owner_obj_signer,
             collection::name(main_collection_obj),
             description,
-            combination.result_token, // token name
+            result_token, // token name
             royalty::get(main_collection_obj),
             main_uri,
         );
@@ -499,7 +490,6 @@ module launchpad_addr::launchpad {
         // This copies the current description ane name from the main_nft
         // TODO: This should be read from the metadata of the main_nft
         let description = token::description(main_nft);
-        let name = token::name(main_nft);
 
         // Check if this is a valid combination
         let evolution_rules = borrow_global<EvolutionRules>(@launchpad_addr);
@@ -542,20 +532,14 @@ module launchpad_addr::launchpad {
     }
 
 
-        public entry fun add_evolution_rule(
-        sender: &signer,
+    public entry fun add_evolution_rule(
+        _sender: &signer,
         main_collection: Object<Collection>,
         main_token: String,
         result_token: String
     ) acquires EvolutionRules {
-        let account = signer::address_of(sender);
 
-        // TODO: store rules somewhere else
         let evolution_rules = borrow_global_mut<EvolutionRules>(@launchpad_addr);
-
-        // todo check if account is owner of main_collection
-        // assert!(object::owner(main_collection) == account, 999);
-
 
         let new_rule = EvolutionRule {
             main_collection,
@@ -570,34 +554,26 @@ module launchpad_addr::launchpad {
     }
     
     public entry fun add_combination_rule(
-        sender: &signer,
+        _sender: &signer,
         main_collection: Object<Collection>,
         main_token: String,
         secondary_collection: Object<Collection>,
         secondary_token: String,
         result_token: String
     ) acquires CombinationRules {
-        let account = signer::address_of(sender);
-
-        // TODO: store rules somewhere else
+        // TODO: Check is sender is owner of main_collection
+        
         let combination_rules = borrow_global_mut<CombinationRules>(@launchpad_addr);
-
-        // todo check if account is owner of main_collection
-        // assert!(object::owner(main_collection) == account, 999);
-
 
         let new_rule = CombinationRule {
             main_collection,
             main_token,
             secondary_collection,
             secondary_token,
-            result_token,
         };
 
-
-        // if (!vector::contains(&combination_rules.rules, new_rule)) {
-            vector::push_back(&mut combination_rules.rules, new_rule);
-        // }
+        assert!(simple_map::contains_key(&combination_rules.results, &new_rule)==false,13);
+        simple_map::add(&mut combination_rules.results, new_rule , result_token);
     }
 
 
@@ -848,7 +824,6 @@ fun mint_nft_internal(
 
     // Get the object address of the newly created NFT
     let nft_obj = object::object_from_constructor_ref(constructor_ref);
-    let nft_obj_addr = object::object_address(&nft_obj);
 
     // Complete the creation and transfer of the NFT
     token_components::create_refs(constructor_ref);
@@ -1059,7 +1034,7 @@ fun mint_nft_internal(
         assert!(token::name(nft2_1) == fire, 3);
         
         // Combine nfts
-        combine_nft(user1, collection_1, collection_2, nft1_1, nft2_1, firesword);
+        combine_nft(user1, collection_1, collection_2, nft1_1, nft2_1);
 
         // TODO: Check if old NFTs are burned
 
@@ -1084,7 +1059,7 @@ fun mint_nft_internal(
         let sword = string::utf8(b"Sword");
         let fire = string::utf8(b"Fire");
         let firesword = string::utf8(b"FireSword");
-        let watersword = string::utf8(b"WaterSword");
+        let water = string::utf8(b"Water");
 
         let (burn_cap, mint_cap) = aptos_coin::initialize_for_test(aptos_framework);
 
@@ -1151,7 +1126,7 @@ fun mint_nft_internal(
         
         let nft2_1 = mint_nft_internal(fire , user1_addr, collection_2);
 
-        add_combination_rule(sender, collection_1, sword, collection_2, fire, firesword);
+        add_combination_rule(sender, collection_1, sword, collection_2, water, firesword);
 
         // assert rule is created
 
@@ -1160,7 +1135,7 @@ fun mint_nft_internal(
         assert!(token::name(nft2_1) == fire, 3);
         
         // Combine nfts
-        combine_nft(user1, collection_1, collection_2, nft1_1, nft2_1, watersword);
+        combine_nft(user1, collection_1, collection_2, nft1_1, nft2_1);
 
         // TODO: Check if old NFTs are burned
 
