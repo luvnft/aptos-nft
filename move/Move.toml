@@ -4,8 +4,8 @@ version = "1.0.0"
 authors = []
 
 [addresses]
-launchpad_addr = "ab2aa484d407b284056c6ca34efa8b2c26b8651843df800bf8ccf7bd1c29af41"
-initial_creator_addr = "ab2aa484d407b284056c6ca34efa8b2c26b8651843df800bf8ccf7bd1c29af41"
+launchpad_addr = "0x38a3dffc203ef69ce9a685a5cf276880413b8d0875f6183d76c8b38661412a7d"
+initial_creator_addr = "0x38a3dffc203ef69ce9a685a5cf276880413b8d0875f6183d76c8b38661412a7d"
 minter = "0x3c41ff6b5845e0094e19888cba63773591be9de59cafa9e582386f6af15dd490"
 
 [dependencies]
