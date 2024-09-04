@@ -44,8 +44,10 @@ module launchpad_addr::launchpad {
     const EINCORRECT_EVOLUTION: u64 = 12;
     /// Combination already exists in the rules
     const EDUPLICATE_COMBINATION: u64 = 13;
+    /// Evolution already exists in the rules
+    const EDUPLICATE_EVOLUTION: u64 = 14;
     /// Only admin can add a new rule
-    const EONLY_ADMIN_CAN_CREATE_RULE: u64 = 14;
+    const EONLY_ADMIN_CAN_CREATE_RULE: u64 = 15;
 
     /// Default mint fee per NFT denominated in oapt (smallest unit of APT, i.e. 1e-8 APT)
     const DEFAULT_MINT_FEE_PER_NFT: u64 = 0;
@@ -161,11 +163,10 @@ module launchpad_addr::launchpad {
     struct EvolutionRule has store, drop {
         main_collection: Object<Collection>,
         main_token: String,
-        result_token: String,
     }
 
     struct EvolutionRules has key {
-        rules: vector<EvolutionRule>,
+        results: SimpleMap<EvolutionRule, String>,
     }
 
     /// If you deploy the module under an object, sender is the object's signer
@@ -280,7 +281,7 @@ module launchpad_addr::launchpad {
 
         // TODO: where to store this really?
         move_to(sender, EvolutionRules {
-            rules: vector::empty(),
+            results: simple_map::create(),
         });
 
         assert!(
@@ -372,7 +373,6 @@ module launchpad_addr::launchpad {
     }
 
     /// Combine NFT, anyone with to eligible NFT's can combine them into a new NFT.
-    /// The main NFT (TODO: Or collection?) metadata contains information about possible combinations and outcomes.
     /// Burns the main_nft and secondary_nft. Mints a new NFT in the same collection as main_nft (with same tokenId)
     public entry fun combine_nft(
         sender: &signer,
@@ -395,7 +395,7 @@ module launchpad_addr::launchpad {
 
         let main_uri = token::uri(main_nft);
         // This copies the current description ane name from the main_nft
-        // TODO: This should be read from the metadata of the main_nft
+        // TODO: Update the description just like the name?
         let description = token::description(main_nft);
 
         // Check if this is a valid combination
@@ -411,7 +411,6 @@ module launchpad_addr::launchpad {
 
         let result_token = *simple_map::borrow(&combination_rules.results, &combination);
         // Create new NFT
-        // TODO: This should change the metadata
         let nft_obj_constructor_ref = &token::create(
             main_collection_owner_obj_signer,
             collection::name(main_collection_obj),
@@ -473,7 +472,6 @@ module launchpad_addr::launchpad {
         sender: &signer,
         main_collection: Object<Collection>,
         main_nft: Object<Token>,
-        desired_result: String,
     ) acquires CollectionConfig, CollectionOwnerObjConfig
     , TokenController, EvolutionRules
     {
@@ -488,18 +486,18 @@ module launchpad_addr::launchpad {
 
         let main_uri = token::uri(main_nft);
         // This copies the current description ane name from the main_nft
-        // TODO: This should be read from the metadata of the main_nft
         let description = token::description(main_nft);
 
         // Check if this is a valid combination
         let evolution_rules = borrow_global<EvolutionRules>(@launchpad_addr);
         let evolution = EvolutionRule {
             main_collection: main_collection,
-            main_token: token::name(main_nft),
-            result_token: desired_result,
+            main_token: token::name(main_nft)
         };
         
-        assert!(vector::contains(&evolution_rules.rules, &evolution), EINCORRECT_EVOLUTION);
+        assert!(simple_map::contains_key(&evolution_rules.results, &evolution), EINCORRECT_EVOLUTION);
+
+        let result_token = *simple_map::borrow(&evolution_rules.results, &evolution);
 
         // Create new NFT
         // TODO: This should change the metadata
@@ -507,7 +505,7 @@ module launchpad_addr::launchpad {
             main_collection_owner_obj_signer,
             collection::name(main_collection),
             description,
-            evolution.result_token, // token name
+            result_token,
             royalty::get(main_collection),
             main_uri,
         );
@@ -544,13 +542,11 @@ module launchpad_addr::launchpad {
         let new_rule = EvolutionRule {
             main_collection,
             main_token,
-            result_token,
         };
 
 
-        // if (!vector::contains(&combination_rules.rules, new_rule)) {
-            vector::push_back(&mut evolution_rules.rules, new_rule);
-        // }
+        assert!(simple_map::contains_key(&evolution_rules.results, &new_rule)==false,EDUPLICATE_EVOLUTION);
+        simple_map::add(&mut evolution_rules.results, new_rule , result_token);
     }
     
     public entry fun add_combination_rule(
@@ -572,7 +568,7 @@ module launchpad_addr::launchpad {
             secondary_token,
         };
 
-        assert!(simple_map::contains_key(&combination_rules.results, &new_rule)==false,13);
+        assert!(simple_map::contains_key(&combination_rules.results, &new_rule)==false,EDUPLICATE_COMBINATION);
         simple_map::add(&mut combination_rules.results, new_rule , result_token);
     }
 

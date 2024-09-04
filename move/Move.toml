@@ -6,7 +6,7 @@ authors = []
 [addresses]
 launchpad_addr = "0x38a3dffc203ef69ce9a685a5cf276880413b8d0875f6183d76c8b38661412a7d"
 initial_creator_addr = "0x38a3dffc203ef69ce9a685a5cf276880413b8d0875f6183d76c8b38661412a7d"
-minter = "0x3c41ff6b5845e0094e19888cba63773591be9de59cafa9e582386f6af15dd490"
+minter = "0xd56e9211aa484538b9b6c518e1fcfc14908eb7a6f819a3eb8a6826245f913e24"
 
 [dependencies]
 AptosFramework = { git = "https://github.com/aptos-labs/aptos-core.git", rev = "mainnet", subdir = "aptos-move/framework/aptos-framework" }
