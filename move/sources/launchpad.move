@@ -275,12 +275,12 @@ module launchpad_addr::launchpad {
         });
 
         // TODO: where to store this really?
-        move_to(sender, CombinationRules {
+        move_to(collection_obj_signer, CombinationRules {
             results: simple_map::create(),
         });
 
         // TODO: where to store this really?
-        move_to(sender, EvolutionRules {
+        move_to(collection_obj_signer, EvolutionRules {
             results: simple_map::create(),
         });
 
@@ -399,7 +399,7 @@ module launchpad_addr::launchpad {
         let description = token::description(main_nft);
 
         // Check if this is a valid combination
-        let combination_rules = borrow_global<CombinationRules>(@launchpad_addr);
+        let combination_rules = borrow_global<CombinationRules>(object::object_address(&main_collection_obj));
         let combination = CombinationRule {
             main_collection: main_collection_obj,
             main_token: token::name(main_nft),
@@ -469,7 +469,7 @@ module launchpad_addr::launchpad {
         let description = token::description(main_nft);
 
         // Check if this is a valid combination
-        let evolution_rules = borrow_global<EvolutionRules>(@launchpad_addr);
+        let evolution_rules = borrow_global<EvolutionRules>(object::object_address(&main_collection));
         let evolution = EvolutionRule {
             main_collection: main_collection,
             main_token: token::name(main_nft)
@@ -517,7 +517,7 @@ module launchpad_addr::launchpad {
     ) acquires EvolutionRules {
 
         // TODO: Check is sender is owner of main_collection
-        let evolution_rules = borrow_global_mut<EvolutionRules>(@launchpad_addr);
+        let evolution_rules = borrow_global_mut<EvolutionRules>(object::object_address(&main_collection));
 
         let new_rule = EvolutionRule {
             main_collection,
@@ -538,8 +538,8 @@ module launchpad_addr::launchpad {
         result_token: String
     ) acquires CombinationRules {
         // TODO: Check is sender is owner of main_collection
-        
-        let combination_rules = borrow_global_mut<CombinationRules>(@launchpad_addr);
+        // let obj_addr = object::object_address(&collection_obj);
+        let combination_rules = borrow_global_mut<CombinationRules>(object::object_address(&main_collection));
 
         let new_rule = CombinationRule {
             main_collection,
@@ -925,7 +925,7 @@ fun mint_nft_internal(
 
 
     #[test(aptos_framework = @0x1, sender = @launchpad_addr, user1 = @0x200, user2 = @0x201)]
-    fun test_combine_add_rules(
+    fun test_combine_add_rule(
         aptos_framework: &signer,
         sender: &signer,
         user1: &signer,
@@ -1022,10 +1022,198 @@ fun mint_nft_internal(
         coin::destroy_mint_cap(mint_cap);
     }
 
+
+    #[test(aptos_framework = @0x1, sender = @launchpad_addr, user1 = @0x200, user2 = @0x201)]
+    fun test_combine_add_multiple_rules(
+        aptos_framework: &signer,
+        sender: &signer,
+        user1: &signer,
+        user2: &signer,
+    ) acquires Registry,  CollectionConfig, CollectionOwnerObjConfig, CombinationRules, TokenController {
+
+        let sword = string::utf8(b"Sword");
+        let fire = string::utf8(b"Fire");
+        let firesword = string::utf8(b"FireSword");
+        let water = string::utf8(b"Water");
+        let watersword = string::utf8(b"WaterSword");
+
+        let (burn_cap, mint_cap) = aptos_coin::initialize_for_test(aptos_framework);
+
+        let user1_addr = signer::address_of(user1);
+        let user2_addr = signer::address_of(user2);
+
+        // current timestamp is 0 after initialization
+        timestamp::set_time_has_started_for_testing(aptos_framework);
+        account::create_account_for_test(user1_addr);
+        account::create_account_for_test(user2_addr);
+        coin::register<AptosCoin>(user1);
+
+        init_module(sender);
+
+        // create first collection
+
+        create_collection(
+            sender,
+            string::utf8(b"description"),
+            string::utf8(b"weapons"),
+            string::utf8(b"https://gateway.irys.xyz/manifest_id/collection.json"),
+            10,
+            option::some(10),
+            option::some(vector[user1_addr]),
+            option::some(timestamp::now_seconds()),
+            option::some(timestamp::now_seconds() + 100),
+            option::some(3),
+            option::some(5),
+            option::some(timestamp::now_seconds() + 200),
+            option::some(timestamp::now_seconds() + 300),
+            option::some(2),
+            option::some(10),
+        );
+
+        // create second collection
+
+        create_collection(
+            user1,
+            string::utf8(b"description"),
+            string::utf8(b"elements"),
+            string::utf8(b"https://gateway.irys.xyz/manifest_id/collection.json"),
+            10,
+            option::some(10),
+            option::some(vector[user1_addr]),
+            option::some(timestamp::now_seconds()),
+            option::some(timestamp::now_seconds() + 100),
+            option::some(3),
+            option::some(5),
+            option::some(timestamp::now_seconds() + 200),
+            option::some(timestamp::now_seconds() + 300),
+            option::some(2),
+            option::some(10),
+        );
+
+        let registry = get_registry();
+        let collection_1 = *vector::borrow(&registry, 0);
+        let nft1_1 = mint_nft_internal(sword , user1_addr, collection_1);
+        assert!(token::uri(nft1_1) == string::utf8(b"https://gateway.irys.xyz/manifest_id/1.json"), 1);
+        
+        let collection_2 = *vector::borrow(&registry, 1);
+
+        let mint_fee = get_mint_fee(collection_2, string::utf8(ALLOWLIST_MINT_STAGE_CATEGORY), 1);
+        aptos_coin::mint(aptos_framework, user1_addr, mint_fee);
+        
+        let nft2_1 = mint_nft_internal(fire , user1_addr, collection_2);
+
+        add_combination_rule(sender, collection_1, sword, collection_2, fire, firesword);
+        // assert rule is created
+
+        add_combination_rule(sender, collection_1, sword, collection_2, water, watersword);
+
+        // Check names of the NFTS we will combine before combining
+        assert!(token::name(nft1_1) == sword, 2);
+        assert!(token::name(nft2_1) == fire, 3);
+        
+        // Combine nfts
+        combine_nft(user1, collection_1, collection_2, nft1_1, nft2_1);
+
+        // TODO: Check if old NFTs are burned
+
+        // TODO: Check if the new NFT is created
+        // assert!(token::name(new_nft) == firesword, 13122);
+
+
+        coin::destroy_burn_cap(burn_cap);
+        coin::destroy_mint_cap(mint_cap);
+    }
+
+
+    #[test(aptos_framework = @0x1, sender = @launchpad_addr, user1 = @0x200, user2 = @0x201)]
+    #[expected_failure(abort_code = EDUPLICATE_COMBINATION, location = Self)]
+    fun test_combine_add_duplicate_rules(
+        aptos_framework: &signer,
+        sender: &signer,
+        user1: &signer,
+        user2: &signer,
+    ) acquires Registry,  CollectionConfig, CollectionOwnerObjConfig, CombinationRules {
+
+        let sword = string::utf8(b"Sword");
+        let fire = string::utf8(b"Fire");
+        let firesword = string::utf8(b"FireSword");
+
+        let (burn_cap, mint_cap) = aptos_coin::initialize_for_test(aptos_framework);
+
+        let user1_addr = signer::address_of(user1);
+        let user2_addr = signer::address_of(user2);
+
+        // current timestamp is 0 after initialization
+        timestamp::set_time_has_started_for_testing(aptos_framework);
+        account::create_account_for_test(user1_addr);
+        account::create_account_for_test(user2_addr);
+        coin::register<AptosCoin>(user1);
+
+        init_module(sender);
+
+        // create first collection
+
+        create_collection(
+            sender,
+            string::utf8(b"description"),
+            string::utf8(b"weapons"),
+            string::utf8(b"https://gateway.irys.xyz/manifest_id/collection.json"),
+            10,
+            option::some(10),
+            option::some(vector[user1_addr]),
+            option::some(timestamp::now_seconds()),
+            option::some(timestamp::now_seconds() + 100),
+            option::some(3),
+            option::some(5),
+            option::some(timestamp::now_seconds() + 200),
+            option::some(timestamp::now_seconds() + 300),
+            option::some(2),
+            option::some(10),
+        );
+
+        // create second collection
+
+        create_collection(
+            user1,
+            string::utf8(b"description"),
+            string::utf8(b"elements"),
+            string::utf8(b"https://gateway.irys.xyz/manifest_id/collection.json"),
+            10,
+            option::some(10),
+            option::some(vector[user1_addr]),
+            option::some(timestamp::now_seconds()),
+            option::some(timestamp::now_seconds() + 100),
+            option::some(3),
+            option::some(5),
+            option::some(timestamp::now_seconds() + 200),
+            option::some(timestamp::now_seconds() + 300),
+            option::some(2),
+            option::some(10),
+        );
+
+        let registry = get_registry();
+        let collection_1 = *vector::borrow(&registry, 0);
+        let nft1_1 = mint_nft_internal(sword , user1_addr, collection_1);
+        assert!(token::uri(nft1_1) == string::utf8(b"https://gateway.irys.xyz/manifest_id/1.json"), 1);
+        
+        let collection_2 = *vector::borrow(&registry, 1);
+
+        let mint_fee = get_mint_fee(collection_2, string::utf8(ALLOWLIST_MINT_STAGE_CATEGORY), 1);
+        aptos_coin::mint(aptos_framework, user1_addr, mint_fee);
+        
+        let nft2_1 = mint_nft_internal(fire , user1_addr, collection_2);
+
+        add_combination_rule(sender, collection_1, sword, collection_2, fire, firesword);
+        add_combination_rule(sender, collection_1, sword, collection_2, fire, firesword);
+
+        coin::destroy_burn_cap(burn_cap);
+        coin::destroy_mint_cap(mint_cap);
+    }
+
     
     #[test(aptos_framework = @0x1, sender = @launchpad_addr, user1 = @0x200, user2 = @0x201)]
     #[expected_failure(abort_code = EINCORRECT_COMBINATION, location = Self)]
-    fun test_combine_add_rules_fail(
+    fun test_combine_add_rule_fail(
         aptos_framework: &signer,
         sender: &signer,
         user1: &signer,
@@ -1112,12 +1300,12 @@ fun mint_nft_internal(
         
         // Combine nfts
         combine_nft(user1, collection_1, collection_2, nft1_1, nft2_1);
+        coin::destroy_burn_cap(burn_cap);
+        coin::destroy_mint_cap(mint_cap);
     }
 
-
-
     #[test(aptos_framework = @0x1, sender = @launchpad_addr, user1 = @0x200, user2 = @0x201)]
-    fun test_evolution_add_rules(
+    fun test_evolution_add_rule(
         aptos_framework: &signer,
         sender: &signer,
         user1: &signer,
@@ -1175,13 +1363,149 @@ fun mint_nft_internal(
         assert!(token::name(nft_baby) == baby, 2);
         
         // Combine nfts
-        evolve_nft(user1, collection, nft_baby, big);
+        evolve_nft(user1, collection, nft_baby);
 
         // TODO: Check if old NFT is burned
 
         // TODO: Check if the new NFT is created
         
 
+
+        coin::destroy_burn_cap(burn_cap);
+        coin::destroy_mint_cap(mint_cap);
+    }
+
+
+
+    #[test(aptos_framework = @0x1, sender = @launchpad_addr, user1 = @0x200, user2 = @0x201)]
+    fun test_evolution_add_multiple_rules(
+        aptos_framework: &signer,
+        sender: &signer,
+        user1: &signer,
+        user2: &signer,
+    ) acquires Registry,  CollectionConfig, CollectionOwnerObjConfig, EvolutionRules, TokenController {
+
+        let baby = string::utf8(b"Baby Mouse");
+        let big = string::utf8(b"Big Mouse");
+        let old = string::utf8(b"Elderly Mouse");
+        
+
+        let (burn_cap, mint_cap) = aptos_coin::initialize_for_test(aptos_framework);
+
+        let user1_addr = signer::address_of(user1);
+        let user2_addr = signer::address_of(user2);
+
+        // current timestamp is 0 after initialization
+        timestamp::set_time_has_started_for_testing(aptos_framework);
+        account::create_account_for_test(user1_addr);
+        account::create_account_for_test(user2_addr);
+        coin::register<AptosCoin>(user1);
+
+        init_module(sender);
+
+        // create first collection
+
+        create_collection(
+            sender,
+            string::utf8(b"description"),
+            string::utf8(b"weapons"),
+            string::utf8(b"https://gateway.irys.xyz/manifest_id/collection.json"),
+            10,
+            option::some(10),
+            option::some(vector[user1_addr]),
+            option::some(timestamp::now_seconds()),
+            option::some(timestamp::now_seconds() + 100),
+            option::some(3),
+            option::some(5),
+            option::some(timestamp::now_seconds() + 200),
+            option::some(timestamp::now_seconds() + 300),
+            option::some(2),
+            option::some(10),
+        );
+
+        let registry = get_registry();
+        let collection = *vector::borrow(&registry, 0);
+        let nft_baby = mint_nft_internal(baby , user1_addr, collection);
+        assert!(token::uri(nft_baby) == string::utf8(b"https://gateway.irys.xyz/manifest_id/1.json"), 1);
+        
+
+        add_evolution_rule(sender, collection, baby, big);
+        add_evolution_rule(sender, collection, big, old);
+
+        // assert rule is created
+
+        // Check names of the NFT we will evolve before evolving
+        assert!(token::name(nft_baby) == baby, 2);
+        
+        // Combine nfts
+        evolve_nft(user1, collection, nft_baby);
+
+        // TODO: Check if old NFT is burned
+
+        // TODO: Check if the new NFT is created
+        
+
+
+        coin::destroy_burn_cap(burn_cap);
+        coin::destroy_mint_cap(mint_cap);
+    }
+
+
+
+    #[test(aptos_framework = @0x1, sender = @launchpad_addr, user1 = @0x200, user2 = @0x201)]
+    #[expected_failure(abort_code = EDUPLICATE_EVOLUTION, location = Self)]
+    fun test_evolution_add_duplicate_rules(
+        aptos_framework: &signer,
+        sender: &signer,
+        user1: &signer,
+        user2: &signer,
+    ) acquires Registry,  CollectionConfig, CollectionOwnerObjConfig, EvolutionRules {
+
+        let baby = string::utf8(b"Baby Mouse");
+        let big = string::utf8(b"Big Mouse");
+        
+
+        let (burn_cap, mint_cap) = aptos_coin::initialize_for_test(aptos_framework);
+
+        let user1_addr = signer::address_of(user1);
+        let user2_addr = signer::address_of(user2);
+
+        // current timestamp is 0 after initialization
+        timestamp::set_time_has_started_for_testing(aptos_framework);
+        account::create_account_for_test(user1_addr);
+        account::create_account_for_test(user2_addr);
+        coin::register<AptosCoin>(user1);
+
+        init_module(sender);
+
+        // create first collection
+
+        create_collection(
+            sender,
+            string::utf8(b"description"),
+            string::utf8(b"weapons"),
+            string::utf8(b"https://gateway.irys.xyz/manifest_id/collection.json"),
+            10,
+            option::some(10),
+            option::some(vector[user1_addr]),
+            option::some(timestamp::now_seconds()),
+            option::some(timestamp::now_seconds() + 100),
+            option::some(3),
+            option::some(5),
+            option::some(timestamp::now_seconds() + 200),
+            option::some(timestamp::now_seconds() + 300),
+            option::some(2),
+            option::some(10),
+        );
+
+        let registry = get_registry();
+        let collection = *vector::borrow(&registry, 0);
+        let nft_baby = mint_nft_internal(baby , user1_addr, collection);
+        assert!(token::uri(nft_baby) == string::utf8(b"https://gateway.irys.xyz/manifest_id/1.json"), 1);
+        
+
+        add_evolution_rule(sender, collection, baby, big);
+        add_evolution_rule(sender, collection, baby, big);
 
         coin::destroy_burn_cap(burn_cap);
         coin::destroy_mint_cap(mint_cap);
