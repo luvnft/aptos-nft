@@ -40,7 +40,7 @@ This hackathon project is a proof of concept for the Move NFT Studio. We plan to
 
 ## Links
 - [Deployment on Movement Testnet](https://explorer.movementnetwork.xyz/account/0xdef8a64cc21403856be63f9f9a14de737d7b7ba601afd5c63227fcb32859217b/modules/code/launchpad?network=testnet)
-- [Deployment on Aptos Testnet](https://explorer.aptoslabs.com/account/0x22dbcdc30072e4f8dc0399afd63959bc14b3596d9df72f7b05178a43cbb872a0/modules/code/launchpad?network=testnet)
+- [Deployment on Aptos Testnet](https://explorer.aptoslabs.com/account/0xb31855a6b9b90cb6663e9facf1b6a7b0a6be3181229c03a57f44b4422a86b0a0/modules/code/launchpad?network=testnet)
 
 ## Team 
 - [Slothify](https://x.com/zkSlothify)
