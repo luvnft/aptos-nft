@@ -357,8 +357,8 @@ module launchpad_addr::launchpad {
     /// Mint NFT, anyone with enough mint fee and has not reached mint limit can mint FA
     /// If we are in allowlist stage, only addresses in allowlist can mint FA
     public entry fun mint_nft(
-        token_name: String,
         sender: &signer,
+        token_name: String,
         collection_obj: Object<Collection>,
         amount: u64
     ) acquires CollectionConfig, CollectionOwnerObjConfig, Config {
