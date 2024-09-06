@@ -3,11 +3,11 @@ import { aptosClient } from "@/utils/aptosClient";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { useEffect, useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
-import { convertIpfsUriToCid } from "@/utils/convertIpfsUriToCid";
-import { ImageMetadata, ipfs } from "@/utils/assetsUploader";
+import { ImageMetadata } from "@/utils/assetsUploader";
 import { IpfsImage } from "@/components/IpfsImage";
 import { Button } from "@/components/ui/button";
 import { combineNFT } from "@/entry-functions/combine_nft";
+import { getIpfsJsonContent } from "@/utils/getIpfsJsonContent";
 
 interface NFT {
   id: string;
@@ -53,33 +53,26 @@ export function CraftNFT() {
           tokens.map(async (token) => {
             const { collection_id, token_name, token_uri, token_data_id } = token.current_token_data;
 
-            const cid = convertIpfsUriToCid(token_uri);
-            const stream = ipfs.cat(cid);
+            const metadata = (await getIpfsJsonContent(token_uri)) as ImageMetadata;
 
-            // Create an array to collect the chunks of data
-            const chunks: Uint8Array[] = [];
+            let image = metadata.image;
 
-            for await (const chunk of stream) {
-              chunks.push(chunk);
+            // If combined NFT, set the proper image
+            if (metadata.combinations) {
+              const combinedName = Object.keys(metadata.combinations).find((key) => key === token_name);
+              if (combinedName) {
+                const combinedMetadata = (await getIpfsJsonContent(
+                  metadata.combinations[combinedName],
+                )) as ImageMetadata;
+                image = combinedMetadata.image;
+              }
             }
-
-            // Concatenate all chunks into a single Uint8Array
-            const contentBytes = new Uint8Array(chunks.reduce((acc, chunk) => acc + chunk.length, 0));
-            let offset = 0;
-            for (const chunk of chunks) {
-              contentBytes.set(chunk, offset);
-              offset += chunk.length;
-            }
-
-            // Try to decode the content as JSON
-            const contentText = new TextDecoder().decode(contentBytes);
-            const parsedJson = JSON.parse(contentText) as ImageMetadata;
 
             return {
               id: token_data_id,
               collection_id,
               name: token_name,
-              image: parsedJson.image,
+              image,
             };
           }),
         );
