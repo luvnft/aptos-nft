@@ -5,9 +5,10 @@ import { convertIpfsUriToCid } from "@/utils/convertIpfsUriToCid";
 
 interface IpfsImageProps {
   ipfsUri: string;
+  type?: string;
 }
 
-export const IpfsImage: React.FC<IpfsImageProps> = ({ ipfsUri }) => {
+export const IpfsImage: React.FC<IpfsImageProps> = ({ ipfsUri, type }) => {
   const [imageSrc, setImageSrc] = useState<string | null>(null);
 
   useEffect(() => {
@@ -38,5 +39,11 @@ export const IpfsImage: React.FC<IpfsImageProps> = ({ ipfsUri }) => {
     fetchImage();
   }, [ipfsUri]);
 
-  return <div>{imageSrc ? <Image src={imageSrc} rounded className="w-10 h-10 bg-gray-100 shrink-0" /> : null}</div>;
+  return (
+    <div>
+      {imageSrc ? (
+        <Image src={imageSrc} rounded className={type === "collection" ? "w-10 h-10 bg-gray-100 shrink-0" : ""} />
+      ) : null}
+    </div>
+  );
 };

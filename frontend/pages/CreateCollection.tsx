@@ -27,7 +27,7 @@ export function CreateCollection() {
 
   // Collection data entered by the user on UI
   const [royaltyPercentage, setRoyaltyPercentage] = useState<number>();
-  const [preMintAmount, setPreMintAmount] = useState<number>();
+  // const [preMintAmount, setPreMintAmount] = useState<number>();
   const [publicMintStartDate, setPublicMintStartDate] = useState<Date>();
   const [publicMintStartTime, setPublicMintStartTime] = useState<string>();
   const [publicMintEndDate, setPublicMintEndDate] = useState<Date>();
@@ -112,9 +112,9 @@ export function CreateCollection() {
       // Once the transaction has been successfully commited to chain,
       if (committedTransactionResponse.success) {
         // mint NFTs immediately for the creator if preMintAmount is set
-        if (preMintAmount) {
-          // TODO
-        }
+        // if (preMintAmount) {
+        //   // TODO
+        // }
 
         // navigate to the `my-collection` page
         navigate(`/my-collections`, { replace: true });
@@ -241,7 +241,7 @@ export function CreateCollection() {
             }}
           />
 
-          <LabeledInput
+          {/* <LabeledInput
             id="for-myself"
             label="Mint for myself"
             tooltip="How many NFTs to mint immediately for the creator"
@@ -249,7 +249,7 @@ export function CreateCollection() {
             onChange={(e) => {
               setPreMintAmount(parseInt(e.target.value));
             }}
-          />
+          /> */}
 
           <ConfirmButton
             title="Create Collection"

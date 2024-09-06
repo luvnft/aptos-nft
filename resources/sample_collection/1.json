@@ -1,16 +1,10 @@
 {
-  "name": "Sample NFT #1",
-  "description": "This is a sample description for NFT #1.",
+  "name": "Basic Sword",
+  "description": "Created on Move NFT Studio.",
   "image": "",
-  "external_url": "https://example.com",
-  "attributes": [
-    {
-      "trait_type": "Background",
-      "value": "Blue"
-    },
-    {
-      "trait_type": "Eyes",
-      "value": "Green"
-    }
-  ]
+  "external_url": "https://gmove-nft.netlify.app/",
+  "combinations": {
+    "Fire Sword": "",
+    "Water Sword": ""
+  }
 }

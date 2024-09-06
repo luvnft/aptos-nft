@@ -20,18 +20,21 @@ export type CollectionMetadata = {
   description: string;
   image: string;
   external_url: string;
-  images_metadata: string;
 };
 type ImageAttribute = {
   trait_type: string;
   value: string;
 };
-type ImageMetadata = {
+type ImageCombination = {
+  [key: string]: string;
+};
+export type ImageMetadata = {
   name: string;
   description: string;
   image: string;
   external_url: string;
   attributes: ImageAttribute[];
+  combinations: ImageCombination;
 };
 
 export const uploadCollectionData = async (
@@ -68,7 +71,12 @@ export const uploadCollectionData = async (
   const mediaExt = collectionCover.name.split(".").pop();
   // Sort and validate nftImageMetadatas to ensure filenames are sequential
   const nftImageMetadatas = files
-    .filter((file) => file.name.endsWith("json") && file.name !== "collection.json")
+    .filter(
+      (file) =>
+        file.name.endsWith("json") &&
+        file.name !== "collection.json" &&
+        !file.name.toLowerCase().includes("combination"), // Exclude combination files
+    )
     .sort((a, b) => {
       const getFileNumber = (file: File) => parseInt(file.name.replace(".json", ""), 10);
 
@@ -89,7 +97,12 @@ export const uploadCollectionData = async (
   });
 
   const imageFiles = files
-    .filter((file) => file.name.endsWith(`.${mediaExt}`) && file.name !== collectionCover.name)
+    .filter(
+      (file) =>
+        file.name.endsWith(`.${mediaExt}`) &&
+        file.name !== collectionCover.name &&
+        !file.name.toLowerCase().includes("combination"), // Exclude combination files
+    )
     .sort((a, b) => {
       const getFileNumber = (file: File) => parseInt(file.name.replace(`.${mediaExt}`, ""), 10);
 
@@ -112,6 +125,45 @@ export const uploadCollectionData = async (
     }
   });
 
+  // Handle combination files (combination1.json, combination2.json, etc.)
+  const combinationMetadatas = files
+    .filter((file) => file.name.endsWith("json") && file.name.includes("combination"))
+    .sort((a, b) => {
+      const getCombinationNumber = (file: File) =>
+        parseInt(file.name.replace("combination", "").replace(".json", ""), 10);
+
+      const numA = getCombinationNumber(a);
+      const numB = getCombinationNumber(b);
+
+      return numA - numB; // Sort by the numeric part of the combination filenames
+    });
+
+  const combinationImageFiles = files
+    .filter((file) => file.name.endsWith(`.${mediaExt}`) && file.name.includes("combination"))
+    .sort((a, b) => {
+      const getCombinationNumber = (file: File) =>
+        parseInt(file.name.replace("combination", "").replace(`.${mediaExt}`, ""), 10);
+
+      const numA = getCombinationNumber(a);
+      const numB = getCombinationNumber(b);
+
+      return numA - numB; // Sort by the numeric part of the combination filenames
+    });
+
+  if (combinationMetadatas.length !== combinationImageFiles.length) {
+    throw new Error("Mismatch between combination metadata json files and images files");
+  }
+
+  // Validate combination filenames
+  combinationMetadatas.forEach((file, index) => {
+    const fileNumber = parseInt(file.name.replace("combination", "").replace(".json", ""), 10);
+    if (fileNumber !== index + 1) {
+      throw new Error(
+        `Combination filenames are not sequential. Expected combination${index + 1}.json but found ${file.name}`,
+      );
+    }
+  });
+
   // Upload images and metadata to IPFS
   // const ipfsUploads: { path: string; cid: string }[] = [];
   const uploadFileToIpfs = async (file: File, path?: string) => {
@@ -126,7 +178,30 @@ export const uploadCollectionData = async (
   const updatedCollectionMetadata: CollectionMetadata = JSON.parse(await collectionMetadataFile.text());
   updatedCollectionMetadata.image = `ipfs://${imageFolderCid}`;
 
-  // Upload image files and corresponding metadata files
+  // Step 1: Upload combination files and store their CIDs
+  const combinationCidMap: ImageCombination = {};
+
+  await Promise.all(
+    combinationMetadatas.map(async (metadataFile, index) => {
+      const metadata: ImageMetadata = JSON.parse(await metadataFile.text());
+      const combinationImageFile = combinationImageFiles[index];
+
+      // Upload combination image file
+      const imageCid = await uploadFileToIpfs(combinationImageFile);
+      metadata.image = `ipfs://${imageCid}`;
+
+      // Upload combination metadata file
+      const updatedMetadataFile = new File([JSON.stringify(metadata)], `combination${index + 1}.json`, {
+        type: metadataFile.type,
+      });
+      const combinationCid = await uploadFileToIpfs(updatedMetadataFile);
+      combinationCidMap[metadata.name] = combinationCid;
+
+      filesToUpload.push({ path: `combination${index + 1}.json`, content: updatedMetadataFile });
+    }),
+  );
+
+  // Step 2: Upload main image files and corresponding metadata files
   await Promise.all(
     nftImageMetadatas.map(async (metadataFile, index) => {
       const metadata: ImageMetadata = JSON.parse(await metadataFile.text());
@@ -136,31 +211,38 @@ export const uploadCollectionData = async (
       const imageCid = await uploadFileToIpfs(imageFile);
       metadata.image = `ipfs://${imageCid}`;
 
+      // Check for combinations and match the combination metadata with the uploaded combination CID
+      if (metadata.combinations) {
+        Object.keys(metadata.combinations).forEach((combinationKey) => {
+          if (combinationCidMap[combinationKey]) {
+            metadata.combinations[combinationKey] = `ipfs://${combinationCidMap[combinationKey]}`;
+          }
+        });
+      }
+
       // Create updated metadata file
-      const updatedMetadataFile = new File([JSON.stringify(metadata)], `${index + 1}`, {
+      const updatedMetadataFile = new File([JSON.stringify(metadata)], `${index + 1}.json`, {
         type: metadataFile.type,
       });
-      filesToUpload.push({ path: `${index + 1}`, content: updatedMetadataFile });
+      filesToUpload.push({ path: `${index + 1}.json`, content: updatedMetadataFile });
     }),
   );
 
-  // Upload all files in a single request to IPFS
+  // Step 3: Add the collection.json file to the filesToUpload list
+  const updatedCollectionFile = new File([JSON.stringify(updatedCollectionMetadata)], "collection.json", {
+    type: collectionMetadataFile.type,
+  });
+  filesToUpload.push({ path: "collection.json", content: updatedCollectionFile });
+
+  // Step 4: Upload all files in a single request to IPFS
   let folderCid = "";
 
   for await (const result of ipfs.addAll(filesToUpload, { wrapWithDirectory: true })) {
     folderCid = result.cid.toString(); // Store the final folder CID
   }
 
-  updatedCollectionMetadata.images_metadata = `ipfs://${folderCid}`;
-
-  const updatedMetadataCid = await uploadFileToIpfs(
-    new File([JSON.stringify(updatedCollectionMetadata)], "collection.json", {
-      type: collectionMetadataFile.type,
-    }),
-  );
-
   return {
-    projectUri: `ipfs://${updatedMetadataCid}`,
+    projectUri: `ipfs://${folderCid}/collection.json`,
     maxSupply: imageFiles.length,
     collectionName: updatedCollectionMetadata.name,
     collectionDescription: updatedCollectionMetadata.description,
