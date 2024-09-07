@@ -2,7 +2,7 @@ import Placeholder1 from "@/assets/placeholders/bear-1.png";
 import Placeholder2 from "@/assets/placeholders/bear-2.png";
 import Placeholder3 from "@/assets/placeholders/bear-3.png";
 import Slothify from "@/assets/team/slothify.jpg";
-import Ryorod from "@/assets/team/ryorod.jpg";
+import R3 from "@/assets/team/r3.jpg";
 import arjanjohan from "@/assets/team/arjanjohan.jpg";
 
 export const config: Config = {
@@ -35,23 +35,23 @@ export const config: Config = {
     members: [
       {
         name: "Slothify",
-        role: "Aliquip Esse",
+        role: "",
         img: Slothify,
         socials: {
           twitter: "https://x.com/zkSlothify",
         },
       },
       {
-        name: "Ryorod",
-        role: "Sunt Duis",
-        img: Ryorod,
+        name: "R3",
+        role: "",
+        img: R3,
         socials: {
           twitter: "https://x.com/987654_21",
         },
       },
       {
         name: "arjanjohan",
-        role: "Ullamco Tempor",
+        role: "",
         img: arjanjohan,
         socials: {
           twitter: "https://x.com/arjanjohan",

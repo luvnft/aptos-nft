@@ -14,7 +14,6 @@ import { LaunchpadHeader } from "@/components/LaunchpadHeader";
 import { UploadSpinner } from "@/components/UploadSpinner";
 import { LabeledInput } from "@/components/ui/labeled-input";
 import { DateTimeInput } from "@/components/ui/date-time-input";
-import { ConfirmButton } from "@/components/ui/confirm-button";
 // Entry functions
 import { createCollection } from "@/entry-functions/create_collection";
 
@@ -233,7 +232,7 @@ export function CreateCollection() {
 
           <LabeledInput
             id="mint-fee"
-            label="Mint fee per NFT in APT"
+            label="Mint fee per NFT in $MOVE"
             tooltip="The fee the nft minter is paying the collection creator when they mint an NFT, denominated in APT"
             disabled={isUploading || !account}
             onChange={(e) => {
@@ -251,10 +250,10 @@ export function CreateCollection() {
             }}
           /> */}
 
-          <ConfirmButton
-            title="Create Collection"
-            className="self-start"
-            onSubmit={onCreateCollection}
+          <Button
+            variant="green"
+            className="self-start mt-4"
+            onClick={onCreateCollection}
             disabled={
               !account ||
               !files?.length ||
@@ -263,18 +262,9 @@ export function CreateCollection() {
               !account ||
               isUploading
             }
-            confirmMessage={
-              <>
-                <p>The upload process requires at least 2 message signatures</p>
-                <ol className="list-decimal list-inside">
-                  <li>To upload collection cover image file and NFT image files into Irys.</li>
-
-                  <li>To upload collection metadata file and NFT metadata files into Irys.</li>
-                </ol>
-                <p>In the case we need to fund a node on Irys, a transfer transaction submission is required also.</p>
-              </>
-            }
-          />
+          >
+            Create Collection
+          </Button>
         </div>
       </div>
     </>
