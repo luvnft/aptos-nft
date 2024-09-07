@@ -44,5 +44,5 @@ This hackathon project is a proof of concept for the Move NFT Studio. We plan to
 
 ## Team 
 - [Slothify](https://x.com/zkSlothify)
-- [Ryorod](https://x.com/987654_21)
+- [R3](https://x.com/987654_21)
 - [arjanjohan](https://x.com/arjanjohan)
