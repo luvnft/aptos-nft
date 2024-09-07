@@ -9,7 +9,7 @@ export type CreateCollectionArguments = {
   projectUri: string; // The project URI (i.e https://mydomain.com)
   maxSupply: number; // The amount of NFTs in a collection
   royaltyPercentage?: number; // The percentage of trading value that collection creator gets when an NFT is sold on marketplaces
-  preMintAmount?: number; // amount of NFT to pre-mint for myself
+  // preMintAmount?: number; // amount of NFT to pre-mint for myself
   allowList?: Array<AccountAddressInput>; // addresses in the allow list
   allowListStartDate?: Date; // allow list start time (in seconds)
   allowListEndDate?: Date; // allow list end time (in seconds)
@@ -28,7 +28,6 @@ export const createCollection = (args: CreateCollectionArguments): InputTransact
     projectUri,
     maxSupply,
     royaltyPercentage,
-    preMintAmount,
     allowList,
     allowListStartDate,
     allowListEndDate,
@@ -49,7 +48,6 @@ export const createCollection = (args: CreateCollectionArguments): InputTransact
         projectUri,
         maxSupply,
         royaltyPercentage,
-        preMintAmount,
         allowList,
         dateToSeconds(allowListStartDate),
         dateToSeconds(allowListEndDate),

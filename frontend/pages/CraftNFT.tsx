@@ -1,27 +1,90 @@
 import { LaunchpadHeader } from "@/components/LaunchpadHeader";
 import { aptosClient } from "@/utils/aptosClient";
-import { InputTransactionData, useWallet } from "@aptos-labs/wallet-adapter-react";
-import { useState } from "react";
+import { useWallet } from "@aptos-labs/wallet-adapter-react";
+import { useEffect, useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
+import { ImageMetadata } from "@/utils/assetsUploader";
+import { IpfsImage } from "@/components/IpfsImage";
+import { Button } from "@/components/ui/button";
+import { combineNFT } from "@/entry-functions/combine_nft";
+import { getIpfsJsonContent } from "@/utils/getIpfsJsonContent";
 
 interface NFT {
   id: string;
+  collection_id: string;
   name: string;
   image: string;
 }
 
-const allNFTs: NFT[] = [
-  { id: "1", name: "Sword", image: "./assets/sword-basic.png" },
-  { id: "2", name: "Fire", image: "./assets/element-fire.png" },
-  { id: "3", name: "Water", image: "./assets/element-water.png" },
-];
+interface Token {
+  current_token_data: {
+    collection_id: string;
+    token_name: string;
+    token_uri: string;
+    token_data_id: string;
+  };
+}
 
 export function CraftNFT() {
-  const { signAndSubmitTransaction } = useWallet();
+  const { account, signAndSubmitTransaction } = useWallet();
+  const [isUploading, setIsUploading] = useState(false);
+
+  const [allNFTs, setAllNFTs] = useState<NFT[]>([]);
   const [selectedNFT1, setSelectedNFT1] = useState<NFT | null>(null);
   const [selectedNFT2, setSelectedNFT2] = useState<NFT | null>(null);
   const [selectedArea, setSelectedArea] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Function to fetch NFTs for the connected wallet
+  useEffect(() => {
+    const fetchNFTs = async () => {
+      if (!account) return;
+
+      try {
+        // Fetch all tokens owned by the account using getAccountOwnedTokens
+        const tokens = (await aptosClient().getAccountOwnedTokens({ accountAddress: account.address })) as Token[];
+
+        if (!tokens || tokens.length === 0) {
+          return;
+        }
+
+        // Fetch token data for each token (assuming standard format)
+        const fetchedNFTs: NFT[] = await Promise.all(
+          tokens.map(async (token) => {
+            const { collection_id, token_name, token_uri, token_data_id } = token.current_token_data;
+
+            const metadata = (await getIpfsJsonContent(token_uri)) as ImageMetadata;
+
+            let image = metadata.image;
+
+            // If combined NFT, set the proper image
+            if (metadata.combinations) {
+              const combinedName = Object.keys(metadata.combinations).find((key) => key === token_name);
+              if (combinedName) {
+                const combinedMetadata = (await getIpfsJsonContent(
+                  metadata.combinations[combinedName],
+                )) as ImageMetadata;
+                image = combinedMetadata.image;
+              }
+            }
+
+            return {
+              id: token_data_id,
+              collection_id,
+              name: token_name,
+              image,
+            };
+          }),
+        );
+
+        setAllNFTs(fetchedNFTs);
+      } catch (error) {
+        console.error("Failed to fetch NFTs:", error);
+      }
+    };
+
+    fetchNFTs();
+  }, [account]);
 
   const handleAreaClick = (area: string) => {
     setSelectedArea(area);
@@ -45,23 +108,31 @@ export function CraftNFT() {
     setIsModalOpen(false);
   };
 
+  // Combine NFT
   const handleSubmit = async () => {
-    if (!selectedNFT1 || !selectedNFT2) return;
-
-    const payload: InputTransactionData = {
-      data: {
-        function: `${import.meta.env.VITE_MODULE_ADDRESS}::module::function`, // TODO: Add module and function names
-        typeArguments: [],
-        functionArguments: [selectedNFT1.id, selectedNFT2.id], // TODO: set correct arguments
-      },
-    };
-
     try {
-      const txn = await signAndSubmitTransaction(payload);
-      await aptosClient().waitForTransaction(txn.hash);
-      console.log("Transaction successful:", txn);
+      if (!selectedNFT1 || !selectedNFT2) return;
+      if (isUploading) throw new Error("Uploading in progress");
+      setIsUploading(true);
+
+      // Submit a combine_nft entry function transaction
+      const response = await signAndSubmitTransaction(
+        combineNFT({
+          main_collection_obj: selectedNFT1.collection_id,
+          secondary_collection_obj: selectedNFT2.collection_id,
+          main_nft: selectedNFT1.id,
+          secondary_nft: selectedNFT2.id,
+        }),
+      );
+
+      // Wait for the transaction to be commited to chain
+      await aptosClient().waitForTransaction({
+        transactionHash: response.hash,
+      });
     } catch (error) {
-      console.error("Transaction failed:", error);
+      alert(error);
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -78,7 +149,7 @@ export function CraftNFT() {
             {selectedNFT1 ? (
               <div>
                 <div>
-                  <img src={selectedNFT1.image} alt={selectedNFT1.name} className="w-full h-full object-cover" />
+                  <IpfsImage ipfsUri={selectedNFT1.image} />
                 </div>
                 <p className="text-center pt-2">{selectedNFT1.name}</p>
               </div>
@@ -92,7 +163,7 @@ export function CraftNFT() {
             {selectedNFT2 ? (
               <div>
                 <div>
-                  <img src={selectedNFT2.image} alt={selectedNFT2.name} className="w-full h-full object-cover" />
+                  <IpfsImage ipfsUri={selectedNFT2.image} />
                 </div>
                 <p className="text-center pt-2">{selectedNFT2.name}</p>
               </div>
@@ -104,13 +175,13 @@ export function CraftNFT() {
 
         {/* Submit Button */}
         <div className="text-center mt-12">
-          <button
-            className="px-4 py-2 bg-blue-500 text-white rounded"
+          <Button
+            variant="green"
             onClick={handleSubmit}
-            disabled={!selectedNFT1 || !selectedNFT2}
+            disabled={isUploading || !account || !selectedNFT1 || !selectedNFT2}
           >
             Craft a new NFT
-          </button>
+          </Button>
         </div>
 
         {/* Modal for selecting NFTs */}
@@ -145,11 +216,11 @@ export function CraftNFT() {
                       onClick={() => !isDisabled && handleNFTSelect(nft)}
                     >
                       <div className={`relative p-2 border ${isSelectedInSameArea ? "border-2 border-green-400" : ""}`}>
-                        <img
-                          src={nft.image}
-                          alt={nft.name}
+                        <div
                           className={`w-full h-full object-cover  ${isDisabled ? "opacity-50 grayscale-[50%]" : ""}`}
-                        />
+                        >
+                          <IpfsImage ipfsUri={nft.image} />
+                        </div>
                         {isDisabled && <div className="absolute inset-0 bg-black opacity-80"></div>}
                       </div>
                       <p className={`text-center pt-2 ${isDisabled ? "opacity-50" : ""}`}>{nft.name}</p>
