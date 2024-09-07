@@ -14,7 +14,6 @@ import { LaunchpadHeader } from "@/components/LaunchpadHeader";
 import { UploadSpinner } from "@/components/UploadSpinner";
 import { LabeledInput } from "@/components/ui/labeled-input";
 import { DateTimeInput } from "@/components/ui/date-time-input";
-import { ConfirmButton } from "@/components/ui/confirm-button";
 // Entry functions
 import { createCollection } from "@/entry-functions/create_collection";
 
@@ -27,7 +26,7 @@ export function CreateCollection() {
 
   // Collection data entered by the user on UI
   const [royaltyPercentage, setRoyaltyPercentage] = useState<number>();
-  const [preMintAmount, setPreMintAmount] = useState<number>();
+  // const [preMintAmount, setPreMintAmount] = useState<number>();
   const [publicMintStartDate, setPublicMintStartDate] = useState<Date>();
   const [publicMintStartTime, setPublicMintStartTime] = useState<string>();
   const [publicMintEndDate, setPublicMintEndDate] = useState<Date>();
@@ -78,7 +77,7 @@ export function CreateCollection() {
       // Set internal isUploading state
       setIsUploading(true);
 
-      // Upload collection files to Irys
+      // Upload collection files to IPFS
       const { collectionName, collectionDescription, maxSupply, projectUri } = await uploadCollectionData(
         // aptosWallet,
         files,
@@ -92,7 +91,6 @@ export function CreateCollection() {
           projectUri,
           maxSupply,
           royaltyPercentage,
-          preMintAmount,
           allowList: undefined,
           allowListStartDate: undefined,
           allowListEndDate: undefined,
@@ -110,8 +108,14 @@ export function CreateCollection() {
         transactionHash: response.hash,
       });
 
-      // Once the transaction has been successfully commited to chain, navigate to the `my-collection` page
+      // Once the transaction has been successfully commited to chain,
       if (committedTransactionResponse.success) {
+        // mint NFTs immediately for the creator if preMintAmount is set
+        // if (preMintAmount) {
+        //   // TODO
+        // }
+
+        // navigate to the `my-collection` page
         navigate(`/my-collections`, { replace: true });
       }
     } catch (error) {
@@ -131,7 +135,7 @@ export function CreateCollection() {
 
           <Card>
             <CardHeader>
-              <CardDescription>Uploads collection files to Irys, a decentralized storage</CardDescription>
+              <CardDescription>Uploads collection files to IPFS</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col items-start justify-between">
@@ -228,7 +232,7 @@ export function CreateCollection() {
 
           <LabeledInput
             id="mint-fee"
-            label="Mint fee per NFT in APT"
+            label="Mint fee per NFT in $MOVE"
             tooltip="The fee the nft minter is paying the collection creator when they mint an NFT, denominated in APT"
             disabled={isUploading || !account}
             onChange={(e) => {
@@ -236,7 +240,7 @@ export function CreateCollection() {
             }}
           />
 
-          <LabeledInput
+          {/* <LabeledInput
             id="for-myself"
             label="Mint for myself"
             tooltip="How many NFTs to mint immediately for the creator"
@@ -244,12 +248,12 @@ export function CreateCollection() {
             onChange={(e) => {
               setPreMintAmount(parseInt(e.target.value));
             }}
-          />
+          /> */}
 
-          <ConfirmButton
-            title="Create Collection"
-            className="self-start"
-            onSubmit={onCreateCollection}
+          <Button
+            variant="green"
+            className="self-start mt-4"
+            onClick={onCreateCollection}
             disabled={
               !account ||
               !files?.length ||
@@ -258,18 +262,9 @@ export function CreateCollection() {
               !account ||
               isUploading
             }
-            confirmMessage={
-              <>
-                <p>The upload process requires at least 2 message signatures</p>
-                <ol className="list-decimal list-inside">
-                  <li>To upload collection cover image file and NFT image files into Irys.</li>
-
-                  <li>To upload collection metadata file and NFT metadata files into Irys.</li>
-                </ol>
-                <p>In the case we need to fund a node on Irys, a transfer transaction submission is required also.</p>
-              </>
-            }
-          />
+          >
+            Create Collection
+          </Button>
         </div>
       </div>
     </>
