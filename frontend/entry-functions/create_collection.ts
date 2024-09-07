@@ -48,6 +48,7 @@ export const createCollection = (args: CreateCollectionArguments): InputTransact
         projectUri,
         maxSupply,
         royaltyPercentage,
+        // @ts-ignore
         allowList,
         dateToSeconds(allowListStartDate),
         dateToSeconds(allowListEndDate),
