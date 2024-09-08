@@ -4,7 +4,7 @@ import { buttonVariants } from "@/components/ui/button";
 
 export function Header() {
   return (
-    <div className="flex items-center justify-between px-4 py-2 max-w-screen-xl mx-auto w-full flex-wrap">
+    <div className="flex items-center justify-between px-4 pt-2 pb-4 max-w-screen-xl mx-auto w-full flex-wrap">
       <h1 className="display">
         <Link to="/">Move NFT Studio</Link>
       </h1>

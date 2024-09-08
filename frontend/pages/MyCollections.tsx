@@ -24,25 +24,27 @@ export function MyCollections() {
   return (
     <>
       <LaunchpadHeader title="My Collections" />
-      <Table className="max-w-screen-xl mx-auto">
-        {!collections.length && (
-          <TableCaption>A list of the collections created under the current contract.</TableCaption>
-        )}
-        <TableHeader>
-          <TableRow>
-            <TableHead>Collection</TableHead>
-            <TableHead>Collection Address</TableHead>
-            <TableHead>Minted NFTs</TableHead>
-            <TableHead>Max Supply</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {collections.length > 0 &&
-            collections.map((collection) => {
-              return <CollectionRow key={collection?.collection_id} collection={collection} />;
-            })}
-        </TableBody>
-      </Table>
+      <div className="max-w-screen-xl mx-auto py-3 bg-primary-foreground/90 rounded-xl text-primary overflow-hidden">
+        <Table>
+          {!collections.length && (
+            <TableCaption className="pb-6">A list of the collections created under the current contract.</TableCaption>
+          )}
+          <TableHeader>
+            <TableRow className="hover:bg-inherit">
+              <TableHead>Collection</TableHead>
+              <TableHead>Collection Address</TableHead>
+              <TableHead>Minted NFTs</TableHead>
+              <TableHead>Max Supply</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {collections.length > 0 &&
+              collections.map((collection) => {
+                return <CollectionRow key={collection?.collection_id} collection={collection} />;
+              })}
+          </TableBody>
+        </Table>
+      </div>
     </>
   );
 }

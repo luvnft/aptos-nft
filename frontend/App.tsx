@@ -40,7 +40,9 @@ const router = createBrowserRouter([
 function App() {
   return (
     <>
-      <RouterProvider router={router} />
+      <div className="bg-bg bg-cover bg-center min-h-screen text-primary-foreground">
+        <RouterProvider router={router} />
+      </div>
     </>
   );
 }

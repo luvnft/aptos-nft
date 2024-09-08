@@ -1,4 +1,5 @@
 const plugin = require("tailwindcss/plugin");
+const IMG_BASE_PATH = "./frontend/assets/img";
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
@@ -87,6 +88,7 @@ module.exports = {
         51: "3.1875rem",
         68: "4.25rem",
         110: "6.875rem",
+        vw16: "min(16px, 1.5vw)",
       },
       lineHeight: {
         16: "1rem",
@@ -103,6 +105,11 @@ module.exports = {
         62: "3.875rem",
         72: "4.5rem",
         116: "7.25rem",
+      },
+      backgroundImage: {
+        bg: `url('${IMG_BASE_PATH}/bg.webp')`,
+        summoningBoard: `url('${IMG_BASE_PATH}/summoning_board.webp')`,
+        areaCard: `url('${IMG_BASE_PATH}/card.png')`,
       },
     },
   },
@@ -182,4 +189,3 @@ module.exports = {
     }),
   ],
 };
-
