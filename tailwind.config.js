@@ -73,6 +73,7 @@ module.exports = {
       fontFamily: {
         sans: ["sans-serif"],
         inter: ["Inter", "sans-serif"],
+        cinzel: ["Cinzel", "serif"],
       },
       fontSize: {
         12: "0.75rem",
@@ -120,13 +121,13 @@ module.exports = {
       addComponents({
         // Component Regular Text Styles
         ".body-sm": {
-          fontFamily: theme("fontFamily.inter"),
+          fontFamily: theme("fontFamily.cinzel"),
           fontSize: theme("fontSize.16"),
           lineHeight: theme("lineHeight.28"),
           fontWeight: theme("fontWeight.regular"),
         },
         ".body-md": {
-          fontFamily: theme("fontFamily.inter"),
+          fontFamily: theme("fontFamily.cinzel"),
           fontSize: theme("fontSize.18"),
           lineHeight: theme("lineHeight.28"),
           fontWeight: theme("fontWeight.regular"),
@@ -134,13 +135,13 @@ module.exports = {
 
         // Component Semibold Text Styles
         ".body-sm-semibold": {
-          fontFamily: theme("fontFamily.inter"),
+          fontFamily: theme("fontFamily.cinzel"),
           fontSize: theme("fontSize.16"),
           lineHeight: theme("lineHeight.28"),
           fontWeight: theme("fontWeight.semibold"),
         },
         ".body-md-semibold": {
-          fontFamily: theme("fontFamily.inter"),
+          fontFamily: theme("fontFamily.cinzel"),
           fontSize: theme("fontSize.18"),
           lineHeight: theme("lineHeight.28"),
           fontWeight: theme("fontWeight.semibold"),
@@ -148,7 +149,7 @@ module.exports = {
 
         // Label Text Styles
         ".label-sm": {
-          fontFamily: theme("fontFamily.inter"),
+          fontFamily: theme("fontFamily.cinzel"),
           fontSize: theme("fontSize.14"),
           lineHeight: theme("lineHeight.24"),
           color: theme("colors.secondary.text"),
@@ -156,7 +157,7 @@ module.exports = {
 
         // Title Text Styles
         ".title-md": {
-          fontFamily: theme("fontFamily.inter"),
+          fontFamily: theme("fontFamily.cinzel"),
           fontSize: theme("fontSize.48"),
           lineHeight: theme("lineHeight.48"),
           fontWeight: theme("fontWeight.bold"),
@@ -165,14 +166,14 @@ module.exports = {
 
         // Heading Text Styles
         ".heading-sm": {
-          fontFamily: theme("fontFamily.inter"),
+          fontFamily: theme("fontFamily.cinzel"),
           fontSize: theme("fontSize.24"),
           lineHeight: theme("lineHeight.32"),
           fontWeight: theme("fontWeight.semibold"),
           letterSpacing: "-0.6%",
         },
         ".heading-md": {
-          fontFamily: theme("fontFamily.inter"),
+          fontFamily: theme("fontFamily.cinzel"),
           fontSize: theme("fontSize.30"),
           lineHeight: theme("lineHeight.36"),
           fontWeight: theme("fontWeight.semibold"),
@@ -180,7 +181,7 @@ module.exports = {
 
         // Display Text Styles
         ".display": {
-          fontFamily: theme("fontFamily.inter"),
+          fontFamily: theme("fontFamily.cinzel"),
           fontSize: "32px",
           lineHeight: "52px",
           fontWeight: theme("fontWeight.bold"),

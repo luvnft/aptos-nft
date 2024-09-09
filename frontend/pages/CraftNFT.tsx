@@ -141,7 +141,7 @@ export function CraftNFT() {
       <LaunchpadHeader title="Craft NFT" />
 
       <div className="container mx-auto p-4 pb-16">
-        <h2 className="text-3xl mb-8 text-center">Combine Your NFTs</h2>
+        <h2 className="text-3xl mb-8 text-center font-bold">Combine Your NFTs</h2>
         <div className="bg-summoningBoard bg-center bg-[length:120%] bg-no-repeat relative before:content-[''] before:block before:pt-[59%]">
           <div className="absolute w-full h-full top-0 left-0 pt-[16.5%]">
             <div className="flex justify-around items-start max-w-[52rem] mx-auto w-[61%]">
@@ -156,7 +156,7 @@ export function CraftNFT() {
                 size="plain"
                 onClick={handleSubmit}
                 disabled={isUploading || !account || !selectedNFT1 || !selectedNFT2}
-                className="px-[6.8%] h-full text-vw16"
+                className="px-[6.8%] h-full text-vw16 font-bold"
               >
                 Craft
               </Button>
@@ -177,7 +177,7 @@ export function CraftNFT() {
                     overflow: "auto",
                   }}
                 >
-                  <Dialog.Title className="text-xl text-center mb-4">Select an NFT</Dialog.Title>
+                  <Dialog.Title className="text-xl text-center mb-4 font-bold">Select an NFT</Dialog.Title>
                   <div className="grid grid-cols-3 gap-4">
                     {allNFTs.map((nft) => {
                       const isDisabled =
@@ -203,7 +203,7 @@ export function CraftNFT() {
                             </div>
                             {isDisabled && <div className="absolute inset-0 bg-black opacity-80"></div>}
                           </div>
-                          <p className={`text-center pt-2 ${isDisabled ? "opacity-50" : ""}`}>{nft.name}</p>
+                          <p className={`text-center pt-2 font-medium ${isDisabled ? "opacity-50" : ""}`}>{nft.name}</p>
                         </div>
                       );
                     })}
@@ -238,10 +238,10 @@ const Area = ({ selectedNFT, onClick, type }: AreaProps) => {
             <div className="p-[9.3%]">
               <IpfsImage ipfsUri={selectedNFT.image} />
             </div>
-            <p className="text-center pt-[9.3%] text-vw16">{selectedNFT.name}</p>
+            <p className="text-center pt-[9.3%] text-vw16 font-bold">{selectedNFT.name}</p>
           </div>
         ) : (
-          <p className="absolute bottom-[19%] left-0 text-center w-full translate-y-1/2 text-vw16">
+          <p className="absolute bottom-[19%] left-0 text-center w-full translate-y-1/2 text-vw16 font-medium">
             Click to select the
             <br />
             {type[0].toUpperCase() + type.slice(1)} NFT

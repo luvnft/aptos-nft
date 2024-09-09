@@ -226,7 +226,7 @@ export const CollectionRow = ({ collection, isDetail }: CollectionRowProps) => {
         <>
           <TableRow className="hover:bg-inherit border-0">
             <TableCell className="w-full" colSpan={4}>
-              <p className="mb-4 font-bold">Mint 1 token</p>
+              <p className="mb-4 font-bold text-16">Mint 1 token</p>
               <div className="flex items-end">
                 {/* <LabeledInput
                   id={`${collection.collection_id}-mint-amount`}
@@ -255,7 +255,7 @@ export const CollectionRow = ({ collection, isDetail }: CollectionRowProps) => {
           <TableRow className="hover:bg-inherit">
             <TableCell className="w-full" colSpan={4}>
               <div className="max-w-2xl">
-                <p className="mb-4 font-bold">Add combination rule</p>
+                <p className="mb-5 font-bold text-16">Add combination rule</p>
                 <div>
                   <LabeledInput
                     id={`${collection.collection_id}-combination-main-collection`}
@@ -268,7 +268,7 @@ export const CollectionRow = ({ collection, isDetail }: CollectionRowProps) => {
                     value={collection.collection_id}
                   />
                 </div>
-                <div className="mt-4">
+                <div className="mt-5">
                   <LabeledInput
                     id={`${collection.collection_id}-combination-main-token-name`}
                     required
@@ -281,7 +281,7 @@ export const CollectionRow = ({ collection, isDetail }: CollectionRowProps) => {
                     type="text"
                   />
                 </div>
-                <div className="mt-4">
+                <div className="mt-5">
                   <LabeledInput
                     id={`${collection.collection_id}-combination-secondary-collection`}
                     required
@@ -294,7 +294,7 @@ export const CollectionRow = ({ collection, isDetail }: CollectionRowProps) => {
                     type="text"
                   />
                 </div>
-                <div className="mt-4">
+                <div className="mt-5">
                   <LabeledInput
                     id={`${collection.collection_id}-combination-secondary-token-name`}
                     required
@@ -307,7 +307,7 @@ export const CollectionRow = ({ collection, isDetail }: CollectionRowProps) => {
                     type="text"
                   />
                 </div>
-                <div className="mt-4">
+                <div className="mt-5">
                   <LabeledInput
                     id={`${collection.collection_id}-combination-result-token-name`}
                     required
@@ -332,7 +332,7 @@ export const CollectionRow = ({ collection, isDetail }: CollectionRowProps) => {
                     !combinationSecondaryTokenName ||
                     !combinationResultTokenName
                   }
-                  className="mt-4"
+                  className="mt-5"
                 >
                   Execute
                 </Button>
