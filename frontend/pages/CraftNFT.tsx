@@ -8,6 +8,7 @@ import { IpfsImage } from "@/components/IpfsImage";
 import { Button } from "@/components/ui/button";
 import { combineNFT } from "@/entry-functions/combine_nft";
 import { getIpfsJsonContent } from "@/utils/getIpfsJsonContent";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface NFT {
   id: string;
@@ -27,6 +28,7 @@ interface Token {
 
 export function CraftNFT() {
   const { account, signAndSubmitTransaction } = useWallet();
+  const queryClient = useQueryClient();
   const [isUploading, setIsUploading] = useState(false);
 
   const [allNFTs, setAllNFTs] = useState<NFT[]>([]);
@@ -129,6 +131,7 @@ export function CraftNFT() {
       await aptosClient().waitForTransaction({
         transactionHash: response.hash,
       });
+      await queryClient.invalidateQueries();
     } catch (error) {
       alert(error);
     } finally {

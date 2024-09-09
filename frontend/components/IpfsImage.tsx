@@ -9,7 +9,7 @@ interface IpfsImageProps {
 }
 
 export const IpfsImage: React.FC<IpfsImageProps> = ({ ipfsUri, type }) => {
-  const imageData = useQuery({
+  const imageQuery = useQuery({
     queryKey: ["ipfsImage", ipfsUri],
     queryFn: async () => {
       try {
@@ -36,7 +36,7 @@ export const IpfsImage: React.FC<IpfsImageProps> = ({ ipfsUri, type }) => {
     },
   });
 
-  const imageSrc = imageData?.data;
+  const imageSrc = imageQuery?.data;
 
   return (
     <div>

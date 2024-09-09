@@ -16,6 +16,7 @@ import { LabeledInput } from "@/components/ui/labeled-input";
 import { DateTimeInput } from "@/components/ui/date-time-input";
 // Entry functions
 import { createCollection } from "@/entry-functions/create_collection";
+import { useQueryClient } from "@tanstack/react-query";
 
 export function CreateCollection() {
   // Wallet Adapter provider
@@ -23,6 +24,7 @@ export function CreateCollection() {
   const { account, signAndSubmitTransaction } = useWallet();
 
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   // Collection data entered by the user on UI
   const [royaltyPercentage, setRoyaltyPercentage] = useState<number>();
@@ -107,6 +109,7 @@ export function CreateCollection() {
       const committedTransactionResponse = await aptosClient().waitForTransaction({
         transactionHash: response.hash,
       });
+      await queryClient.invalidateQueries();
 
       // Once the transaction has been successfully commited to chain,
       if (committedTransactionResponse.success) {
