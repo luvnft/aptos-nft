@@ -19,9 +19,9 @@ export const LaunchpadHeader: FC<LaunchpadHeaderProps> = ({ title }) => {
         <Link className={buttonVariants({ variant: "link" })} to={"/"}>
           Home
         </Link>
-        {location.pathname !== "/my-collections" && (
-          <Link className={buttonVariants({ variant: "link" })} to={"/my-collections"}>
-            My Collections
+        {location.pathname !== "/collections" && (
+          <Link className={buttonVariants({ variant: "link" })} to={"/collections"}>
+            Collections
           </Link>
         )}
         {location.pathname !== "/create-collection" && (

@@ -10,8 +10,8 @@ export function Header() {
       </h1>
 
       <div className="flex gap-2 items-center flex-wrap">
-        <Link className={buttonVariants({ variant: "link" })} to={"/my-collections"}>
-          My Collections
+        <Link className={buttonVariants({ variant: "link" })} to={"/collections"}>
+          Collections
         </Link>
         <Link className={buttonVariants({ variant: "link" })} to={"/create-collection"}>
           Create Collection

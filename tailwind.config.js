@@ -1,5 +1,5 @@
 const plugin = require("tailwindcss/plugin");
-const IMG_BASE_PATH = "./frontend/assets/img";
+const IMG_BASE_PATH = "/frontend/assets/img";
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {

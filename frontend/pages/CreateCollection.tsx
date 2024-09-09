@@ -115,8 +115,8 @@ export function CreateCollection() {
         //   // TODO
         // }
 
-        // navigate to the `my-collection` page
-        navigate(`/my-collections`, { replace: true });
+        // navigate to the `collections` page
+        navigate(`/collections`);
       }
     } catch (error) {
       alert(error);
