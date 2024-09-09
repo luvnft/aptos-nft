@@ -140,103 +140,114 @@ export function CraftNFT() {
     <>
       <LaunchpadHeader title="Craft NFT" />
 
-      <div className="container mx-auto p-4 pt-8">
-        <h2 className="text-2xl mb-8 text-center">Combine Your NFTs</h2>
+      <div className="container mx-auto p-4 pb-16">
+        <h2 className="text-3xl mb-8 text-center font-bold">Combine Your NFTs</h2>
+        <div className="bg-summoningBoard bg-center bg-[length:120%] bg-no-repeat relative before:content-[''] before:block before:pt-[59%]">
+          <div className="absolute w-full h-full top-0 left-0 pt-[16.5%]">
+            <div className="flex justify-around items-start max-w-[52rem] mx-auto w-[61%]">
+              <Area selectedNFT={selectedNFT1} onClick={() => handleAreaClick("area1")} type="main" />
+              <Area selectedNFT={selectedNFT2} onClick={() => handleAreaClick("area2")} type="secondary" />
+            </div>
 
-        <div className="flex justify-around items-start max-w-3xl mx-auto">
-          {/* Area 1 */}
-          <div className="w-1/3 p-4 border cursor-pointer" onClick={() => handleAreaClick("area1")}>
-            {selectedNFT1 ? (
-              <div>
-                <div>
-                  <IpfsImage ipfsUri={selectedNFT1.image} />
-                </div>
-                <p className="text-center pt-2">{selectedNFT1.name}</p>
-              </div>
-            ) : (
-              <p className="text-center">Click to select NFT 1</p>
-            )}
-          </div>
+            {/* Submit Button */}
+            <div className="text-center pt-[1.8%] h-[14%]">
+              <Button
+                variant="plain"
+                size="plain"
+                onClick={handleSubmit}
+                disabled={isUploading || !account || !selectedNFT1 || !selectedNFT2}
+                className="px-[6.8%] h-full text-vw16 font-bold"
+              >
+                Craft
+              </Button>
+            </div>
 
-          {/* Area 2 */}
-          <div className="w-1/3 p-4 border cursor-pointer" onClick={() => handleAreaClick("area2")}>
-            {selectedNFT2 ? (
-              <div>
-                <div>
-                  <IpfsImage ipfsUri={selectedNFT2.image} />
-                </div>
-                <p className="text-center pt-2">{selectedNFT2.name}</p>
-              </div>
-            ) : (
-              <p className="text-center">Click to select NFT 2</p>
-            )}
-          </div>
-        </div>
+            {/* Modal for selecting NFTs */}
+            <Dialog.Root open={isModalOpen} onOpenChange={setIsModalOpen}>
+              <Dialog.Portal>
+                <Dialog.Overlay className="fixed inset-0 bg-black opacity-80" />
+                <Dialog.Content
+                  className="fixed bg-white p-6 shadow-lg rounded-lg"
+                  style={{
+                    maxWidth: "600px",
+                    maxHeight: "80%",
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%)",
+                    overflow: "auto",
+                  }}
+                >
+                  <Dialog.Title className="text-xl text-center mb-4 font-bold">Select an NFT</Dialog.Title>
+                  <div className="grid grid-cols-3 gap-4">
+                    {allNFTs.map((nft) => {
+                      const isDisabled =
+                        (selectedArea === "area1" && nft.id === selectedNFT2?.id) ||
+                        (selectedArea === "area2" && nft.id === selectedNFT1?.id);
+                      const isSelectedInSameArea =
+                        (selectedArea === "area1" && nft.id === selectedNFT1?.id) ||
+                        (selectedArea === "area2" && nft.id === selectedNFT2?.id);
 
-        {/* Submit Button */}
-        <div className="text-center mt-12">
-          <Button
-            variant="green"
-            onClick={handleSubmit}
-            disabled={isUploading || !account || !selectedNFT1 || !selectedNFT2}
-          >
-            Craft a new NFT
-          </Button>
-        </div>
-
-        {/* Modal for selecting NFTs */}
-        <Dialog.Root open={isModalOpen} onOpenChange={setIsModalOpen}>
-          <Dialog.Portal>
-            <Dialog.Overlay className="fixed inset-0 bg-black opacity-80" />
-            <Dialog.Content
-              className="fixed bg-white p-6 shadow-lg rounded-lg"
-              style={{
-                maxWidth: "600px",
-                maxHeight: "80%",
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%, -50%)",
-                overflow: "auto",
-              }}
-            >
-              <Dialog.Title className="text-xl text-center mb-4">Select an NFT</Dialog.Title>
-              <div className="grid grid-cols-3 gap-4">
-                {allNFTs.map((nft) => {
-                  const isDisabled =
-                    (selectedArea === "area1" && nft.id === selectedNFT2?.id) ||
-                    (selectedArea === "area2" && nft.id === selectedNFT1?.id);
-                  const isSelectedInSameArea =
-                    (selectedArea === "area1" && nft.id === selectedNFT1?.id) ||
-                    (selectedArea === "area2" && nft.id === selectedNFT2?.id);
-
-                  return (
-                    <div
-                      key={nft.id}
-                      className={`${isDisabled ? "cursor-not-allowed" : "cursor-pointer"}`}
-                      onClick={() => !isDisabled && handleNFTSelect(nft)}
-                    >
-                      <div className={`relative p-2 border ${isSelectedInSameArea ? "border-2 border-green-400" : ""}`}>
+                      return (
                         <div
-                          className={`w-full h-full object-cover  ${isDisabled ? "opacity-50 grayscale-[50%]" : ""}`}
+                          key={nft.id}
+                          className={`${isDisabled ? "cursor-not-allowed" : "cursor-pointer"}`}
+                          onClick={() => !isDisabled && handleNFTSelect(nft)}
                         >
-                          <IpfsImage ipfsUri={nft.image} />
+                          <div
+                            className={`relative p-2 border ${isSelectedInSameArea ? "border-2 border-green-400" : ""}`}
+                          >
+                            <div
+                              className={`w-full h-full object-cover  ${isDisabled ? "opacity-50 grayscale-[50%]" : ""}`}
+                            >
+                              <IpfsImage ipfsUri={nft.image} />
+                            </div>
+                            {isDisabled && <div className="absolute inset-0 bg-black opacity-80"></div>}
+                          </div>
+                          <p className={`text-center pt-2 font-medium ${isDisabled ? "opacity-50" : ""}`}>{nft.name}</p>
                         </div>
-                        {isDisabled && <div className="absolute inset-0 bg-black opacity-80"></div>}
-                      </div>
-                      <p className={`text-center pt-2 ${isDisabled ? "opacity-50" : ""}`}>{nft.name}</p>
-                    </div>
-                  );
-                })}
-              </div>
-              <div className="flex justify-end mt-6">
-                <Dialog.Close asChild>
-                  <button className="px-4 py-2 bg-gray-500 text-white rounded">Cancel</button>
-                </Dialog.Close>
-              </div>
-            </Dialog.Content>
-          </Dialog.Portal>
-        </Dialog.Root>
+                      );
+                    })}
+                  </div>
+                  <div className="flex justify-end mt-6">
+                    <Dialog.Close asChild>
+                      <button className="px-4 py-2 bg-gray-500 text-white rounded">Cancel</button>
+                    </Dialog.Close>
+                  </div>
+                </Dialog.Content>
+              </Dialog.Portal>
+            </Dialog.Root>
+          </div>
+        </div>
       </div>
     </>
   );
 }
+
+interface AreaProps {
+  selectedNFT: NFT | null;
+  onClick: () => void;
+  type: "main" | "secondary";
+}
+
+const Area = ({ selectedNFT, onClick, type }: AreaProps) => {
+  return (
+    <div className="bg-areaCard bg-contain bg-no-repeat w-1/3 relative before:content-[''] before:block before:pt-[141.31%]">
+      <div className="absolute w-full h-full top-0 left-0 p-[6.5%] cursor-pointer text-primary" onClick={onClick}>
+        {selectedNFT ? (
+          <div>
+            <div className="p-[9.3%]">
+              <IpfsImage ipfsUri={selectedNFT.image} />
+            </div>
+            <p className="text-center pt-[9.3%] text-vw16 font-bold">{selectedNFT.name}</p>
+          </div>
+        ) : (
+          <p className="absolute bottom-[19%] left-0 text-center w-full translate-y-1/2 text-vw16 font-medium">
+            Click to select the
+            <br />
+            {type[0].toUpperCase() + type.slice(1)} NFT
+          </p>
+        )}
+      </div>
+    </div>
+  );
+};

@@ -115,8 +115,8 @@ export function CreateCollection() {
         //   // TODO
         // }
 
-        // navigate to the `my-collection` page
-        navigate(`/my-collections`, { replace: true });
+        // navigate to the `collections` page
+        navigate(`/collections`);
       }
     } catch (error) {
       alert(error);
@@ -129,8 +129,8 @@ export function CreateCollection() {
     <>
       <LaunchpadHeader title="Create New Collection" />
 
-      <div className="flex flex-col md:flex-row items-start justify-between px-4 py-2 gap-4 max-w-screen-xl mx-auto">
-        <div className="w-full md:w-2/3 flex flex-col gap-y-4 order-2 md:order-1">
+      <div className="flex flex-col md:flex-row items-start justify-between px-4 py-8 gap-4 max-w-screen-xl mx-auto bg-primary-foreground/90 rounded-xl text-primary">
+        <div className="w-full md:w-2/3 flex flex-col gap-y-5 order-2 md:order-1">
           <UploadSpinner on={isUploading} />
 
           <Card>

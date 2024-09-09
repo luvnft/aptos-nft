@@ -2,8 +2,9 @@ import { Outlet, RouterProvider, createBrowserRouter } from "react-router-dom";
 
 import { Mint } from "@/pages/Mint";
 import { CreateCollection } from "@/pages/CreateCollection";
-import { MyCollections } from "@/pages/MyCollections";
+import { Collections } from "@/pages/Collections";
 import { CraftNFT } from "./pages/CraftNFT";
+import { CollectionDetail } from "./pages/CollectionDetail";
 
 function Layout() {
   return (
@@ -26,8 +27,12 @@ const router = createBrowserRouter([
         element: <CreateCollection />,
       },
       {
-        path: "my-collections",
-        element: <MyCollections />,
+        path: "collections",
+        element: <Collections />,
+      },
+      {
+        path: "collection/:collection_id",
+        element: <CollectionDetail />,
       },
       {
         path: "craft-nft",
@@ -40,7 +45,9 @@ const router = createBrowserRouter([
 function App() {
   return (
     <>
-      <RouterProvider router={router} />
+      <div className="bg-bg bg-cover bg-center min-h-screen text-primary-foreground">
+        <RouterProvider router={router} />
+      </div>
     </>
   );
 }

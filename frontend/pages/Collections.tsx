@@ -17,70 +17,62 @@ import { addCombinationRule } from "@/entry-functions/add_combination_rule";
 import { aptosClient } from "@/utils/aptosClient";
 import { convertIpfsUriToCid } from "@/utils/convertIpfsUriToCid";
 import { CollectionMetadata, ImageMetadata, ipfs } from "@/utils/assetsUploader";
+import { getIpfsJsonContent } from "@/utils/getIpfsJsonContent";
+import { useQueryClient } from "@tanstack/react-query";
 
-export function MyCollections() {
+export function Collections() {
   const collections: Array<GetCollectionDataResponse> = useGetCollections();
 
   return (
     <>
-      <LaunchpadHeader title="My Collections" />
-      <Table className="max-w-screen-xl mx-auto">
-        {!collections.length && (
-          <TableCaption>A list of the collections created under the current contract.</TableCaption>
-        )}
-        <TableHeader>
-          <TableRow>
-            <TableHead>Collection</TableHead>
-            <TableHead>Collection Address</TableHead>
-            <TableHead>Minted NFTs</TableHead>
-            <TableHead>Max Supply</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {collections.length > 0 &&
-            collections.map((collection) => {
-              return <CollectionRow key={collection?.collection_id} collection={collection} />;
-            })}
-        </TableBody>
-      </Table>
+      <LaunchpadHeader title="All Collections" />
+      <div className="max-w-screen-xl mx-auto py-3 bg-primary-foreground/90 rounded-xl text-primary overflow-hidden">
+        <Table>
+          {!collections.length && (
+            <TableCaption className="pb-6">A list of the collections created under the current contract.</TableCaption>
+          )}
+          <CollectionTableHeader />
+          <TableBody>
+            {collections.length > 0 &&
+              collections.map((collection) => {
+                return <CollectionRow key={collection?.collection_id} collection={collection} />;
+              })}
+          </TableBody>
+        </Table>
+      </div>
     </>
   );
 }
 
+export const CollectionTableHeader = () => {
+  return (
+    <TableHeader>
+      <TableRow className="hover:bg-inherit">
+        <TableHead>Collection</TableHead>
+        <TableHead>Collection Address</TableHead>
+        <TableHead>Minted NFTs</TableHead>
+        <TableHead>Max Supply</TableHead>
+      </TableRow>
+    </TableHeader>
+  );
+};
+
 interface CollectionRowProps {
   collection: GetCollectionDataResponse;
+  isDetail?: boolean;
 }
 
-const CollectionRow = ({ collection }: CollectionRowProps) => {
+export const CollectionRow = ({ collection, isDetail }: CollectionRowProps) => {
   const { account, signAndSubmitTransaction } = useWallet();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   // collection metadata
   const [metadata, setMetadata] = useState<CollectionMetadata>();
   useEffect(() => {
     const fetchContent = async () => {
       try {
-        const cid = convertIpfsUriToCid(collection.uri);
-        const stream = ipfs.cat(cid);
-
-        // Create an array to collect the chunks of data
-        const chunks: Uint8Array[] = [];
-
-        for await (const chunk of stream) {
-          chunks.push(chunk);
-        }
-
-        // Concatenate all chunks into a single Uint8Array
-        const contentBytes = new Uint8Array(chunks.reduce((acc, chunk) => acc + chunk.length, 0));
-        let offset = 0;
-        for (const chunk of chunks) {
-          contentBytes.set(chunk, offset);
-          offset += chunk.length;
-        }
-
-        // Try to decode the content as JSON
-        const contentText = new TextDecoder().decode(contentBytes);
-        const parsedJson = JSON.parse(contentText);
+        const parsedJson = await getIpfsJsonContent(collection.uri);
         setMetadata(parsedJson);
       } catch (error) {
         console.error("Error fetching content from IPFS:", error);
@@ -91,7 +83,6 @@ const CollectionRow = ({ collection }: CollectionRowProps) => {
   }, [collection]);
 
   const [isUploading, setIsUploading] = useState(false);
-  const [isTransactionFormOpen, setIsTransactionFormOpen] = useState(false);
 
   // Mint amount
   // const [mintAmount, setMintAmount] = useState<number>();
@@ -103,7 +94,8 @@ const CollectionRow = ({ collection }: CollectionRowProps) => {
   const [combinationResultTokenName, setCombinationResultTokenName] = useState<string>();
 
   const onClickRow = () => {
-    setIsTransactionFormOpen((state) => !state);
+    if (isDetail) return;
+    navigate(`/collection/${collection.collection_id}`);
   };
 
   // Mint NFT
@@ -156,6 +148,7 @@ const CollectionRow = ({ collection }: CollectionRowProps) => {
       await aptosClient().waitForTransaction({
         transactionHash: response.hash,
       });
+      await queryClient.invalidateQueries();
     } catch (error) {
       alert(error);
     } finally {
@@ -189,11 +182,12 @@ const CollectionRow = ({ collection }: CollectionRowProps) => {
       const committedTransactionResponse = await aptosClient().waitForTransaction({
         transactionHash: response.hash,
       });
+      await queryClient.invalidateQueries();
 
       // Once the transaction has been successfully commited to chain,
       if (committedTransactionResponse.success) {
         // navigate to the `craft-nft` page
-        navigate(`/craft-nft`, { replace: true });
+        navigate(`/craft-nft`);
       }
     } catch (error) {
       alert(error);
@@ -207,7 +201,7 @@ const CollectionRow = ({ collection }: CollectionRowProps) => {
       <TableRow
         key={collection?.collection_id}
         onClick={onClickRow}
-        className={`${isTransactionFormOpen ? "border-0" : ""} cursor-pointer`}
+        className={`${isDetail ? "border-0 hover:bg-inherit" : "cursor-pointer"}`}
       >
         <TableCell className="font-medium">
           <div className="flex items-center gap-2 flex-wrap">
@@ -220,6 +214,7 @@ const CollectionRow = ({ collection }: CollectionRowProps) => {
             to={`https://explorer.aptoslabs.com/object/${collection?.collection_id}?network=${NETWORK}`}
             target="_blank"
             style={{ textDecoration: "underline" }}
+            onClick={(e) => e.stopPropagation()}
           >
             {collection?.collection_id}
           </Link>
@@ -227,11 +222,11 @@ const CollectionRow = ({ collection }: CollectionRowProps) => {
         <TableCell>{collection?.total_minted_v2}</TableCell>
         <TableCell>{collection?.max_supply}</TableCell>
       </TableRow>
-      {isTransactionFormOpen && (
+      {isDetail && (
         <>
           <TableRow className="hover:bg-inherit border-0">
             <TableCell className="w-full" colSpan={4}>
-              <p className="mb-4 font-bold">Mint 1 token</p>
+              <p className="mb-4 font-bold text-16">Mint 1 token</p>
               <div className="flex items-end">
                 {/* <LabeledInput
                   id={`${collection.collection_id}-mint-amount`}
@@ -260,7 +255,7 @@ const CollectionRow = ({ collection }: CollectionRowProps) => {
           <TableRow className="hover:bg-inherit">
             <TableCell className="w-full" colSpan={4}>
               <div className="max-w-2xl">
-                <p className="mb-4 font-bold">Add combination rule</p>
+                <p className="mb-5 font-bold text-16">Add combination rule</p>
                 <div>
                   <LabeledInput
                     id={`${collection.collection_id}-combination-main-collection`}
@@ -273,7 +268,7 @@ const CollectionRow = ({ collection }: CollectionRowProps) => {
                     value={collection.collection_id}
                   />
                 </div>
-                <div className="mt-4">
+                <div className="mt-5">
                   <LabeledInput
                     id={`${collection.collection_id}-combination-main-token-name`}
                     required
@@ -286,7 +281,7 @@ const CollectionRow = ({ collection }: CollectionRowProps) => {
                     type="text"
                   />
                 </div>
-                <div className="mt-4">
+                <div className="mt-5">
                   <LabeledInput
                     id={`${collection.collection_id}-combination-secondary-collection`}
                     required
@@ -299,7 +294,7 @@ const CollectionRow = ({ collection }: CollectionRowProps) => {
                     type="text"
                   />
                 </div>
-                <div className="mt-4">
+                <div className="mt-5">
                   <LabeledInput
                     id={`${collection.collection_id}-combination-secondary-token-name`}
                     required
@@ -312,7 +307,7 @@ const CollectionRow = ({ collection }: CollectionRowProps) => {
                     type="text"
                   />
                 </div>
-                <div className="mt-4">
+                <div className="mt-5">
                   <LabeledInput
                     id={`${collection.collection_id}-combination-result-token-name`}
                     required
@@ -337,7 +332,7 @@ const CollectionRow = ({ collection }: CollectionRowProps) => {
                     !combinationSecondaryTokenName ||
                     !combinationResultTokenName
                   }
-                  className="mt-4"
+                  className="mt-5"
                 >
                   Execute
                 </Button>

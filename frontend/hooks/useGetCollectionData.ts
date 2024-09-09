@@ -111,6 +111,7 @@ export function useGetCollectionData(collection_id: string = config.collection_i
                   cdn_animation_uri
                   cdn_image_uri
                 }
+                total_minted_v2
 							}
 							current_collection_ownership_v2_view(
 								where: { collection_id: { _eq: $collection_id } }
