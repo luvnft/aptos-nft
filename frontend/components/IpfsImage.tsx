@@ -36,7 +36,7 @@ export const IpfsImage: React.FC<IpfsImageProps> = ({ ipfsUri, type }) => {
     },
   });
 
-  const imageSrc = imageQuery?.data;
+  const imageSrc = imageQuery.data;
 
   return (
     <div>
