@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
 import { Image } from "@/components/ui/image";
 import { ipfs } from "@/utils/assetsUploader";
 import { convertIpfsUriToCid } from "@/utils/convertIpfsUriToCid";
+import { useQuery } from "@tanstack/react-query";
 
 interface IpfsImageProps {
   ipfsUri: string;
@@ -9,10 +9,9 @@ interface IpfsImageProps {
 }
 
 export const IpfsImage: React.FC<IpfsImageProps> = ({ ipfsUri, type }) => {
-  const [imageSrc, setImageSrc] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchImage = async () => {
+  const imageQuery = useQuery({
+    queryKey: ["ipfsImage", ipfsUri],
+    queryFn: async () => {
       try {
         // Retrieve the image from IPFS
         const stream = ipfs.cat(convertIpfsUriToCid(ipfsUri));
@@ -29,15 +28,15 @@ export const IpfsImage: React.FC<IpfsImageProps> = ({ ipfsUri, type }) => {
         // Convert Blob to a Data URL
         const imageUrl = URL.createObjectURL(blob);
 
-        // Set the image source
-        setImageSrc(imageUrl);
+        return imageUrl;
       } catch (error) {
         console.error(`Error fetching from ${ipfsUri}:`, error);
+        return null;
       }
-    };
+    },
+  });
 
-    fetchImage();
-  }, [ipfsUri]);
+  const imageSrc = imageQuery?.data;
 
   return (
     <div>
