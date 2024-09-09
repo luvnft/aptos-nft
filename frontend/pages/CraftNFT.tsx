@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { combineNFT } from "@/entry-functions/combine_nft";
 import { getIpfsJsonContent } from "@/utils/getIpfsJsonContent";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useGetCollections } from "@/hooks/useGetCollections";
+import { GetCollectionDataResponse } from "@aptos-labs/ts-sdk";
 
 interface NFT {
   id: string;
@@ -36,6 +38,8 @@ export function CraftNFT() {
   const [selectedArea, setSelectedArea] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  const collections: Array<GetCollectionDataResponse> = useGetCollections();
+
   // fetch NFTs for the connected wallet
   const nftsQuery = useQuery({
     queryKey: ["nfts", account?.address],
@@ -47,12 +51,17 @@ export function CraftNFT() {
         const tokens = (await aptosClient().getAccountOwnedTokens({ accountAddress: account.address })) as Token[];
 
         if (!tokens || tokens.length === 0) {
-          return;
+          return [];
         }
+
+        // Filter tokens by collections
+        const filteredTokens = tokens.filter((token) =>
+          collections.some((collection) => collection.collection_id === token.current_token_data.collection_id),
+        );
 
         // Fetch token data for each token (assuming standard format)
         const fetchedNFTs: NFT[] = await Promise.all(
-          tokens.map(async (token) => {
+          filteredTokens.map(async (token) => {
             const { collection_id, token_name, token_uri, token_data_id } = token.current_token_data;
 
             const metadata = (await getIpfsJsonContent(token_uri)) as ImageMetadata;
@@ -91,7 +100,7 @@ export function CraftNFT() {
 
   useEffect(() => {
     queryClient.invalidateQueries();
-  }, [account, queryClient]);
+  }, [account, queryClient, collections]);
 
   const handleAreaClick = (area: string) => {
     setSelectedArea(area);
