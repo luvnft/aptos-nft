@@ -1,4 +1,4 @@
-import { IMG_BASE_PATH } from "@/constants";
+import HeroImage from "@/assets/img/hero.webp";
 
 interface HeroImageSectionProps {}
 
@@ -6,7 +6,7 @@ export const HeroImageSection: React.FC<HeroImageSectionProps> = () => {
   return (
     <section className="mx-auto max-w-5xl">
       <div>
-        <img src={`${IMG_BASE_PATH}/hero.webp`} alt="" />
+        <img src={HeroImage} alt="" />
       </div>
       <p className="mt-8">
         Move NFT Studio is a user-friendly platform that simplifies the creation and management of NFTs on the Movement
