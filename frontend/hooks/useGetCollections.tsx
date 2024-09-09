@@ -29,7 +29,7 @@ export function useGetCollections() {
     },
   });
 
-  return collectionsQuery?.data || [];
+  return collectionsQuery.data || [];
 }
 
 const getRegistry = async () => {

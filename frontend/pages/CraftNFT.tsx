@@ -8,7 +8,7 @@ import { IpfsImage } from "@/components/IpfsImage";
 import { Button } from "@/components/ui/button";
 import { combineNFT } from "@/entry-functions/combine_nft";
 import { getIpfsJsonContent } from "@/utils/getIpfsJsonContent";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface NFT {
   id: string;
@@ -31,16 +31,16 @@ export function CraftNFT() {
   const queryClient = useQueryClient();
   const [isUploading, setIsUploading] = useState(false);
 
-  const [allNFTs, setAllNFTs] = useState<NFT[]>([]);
   const [selectedNFT1, setSelectedNFT1] = useState<NFT | null>(null);
   const [selectedNFT2, setSelectedNFT2] = useState<NFT | null>(null);
   const [selectedArea, setSelectedArea] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Function to fetch NFTs for the connected wallet
-  useEffect(() => {
-    const fetchNFTs = async () => {
-      if (!account) return;
+  // fetch NFTs for the connected wallet
+  const nftsQuery = useQuery({
+    queryKey: ["nfts", account?.address],
+    queryFn: async () => {
+      if (!account) return [];
 
       try {
         // Fetch all tokens owned by the account using getAccountOwnedTokens
@@ -79,14 +79,19 @@ export function CraftNFT() {
           }),
         );
 
-        setAllNFTs(fetchedNFTs);
+        return fetchedNFTs;
       } catch (error) {
         console.error("Failed to fetch NFTs:", error);
+        return [];
       }
-    };
+    },
+  });
 
-    fetchNFTs();
-  }, [account]);
+  const allNFTs = nftsQuery.data || [];
+
+  useEffect(() => {
+    queryClient.invalidateQueries();
+  }, [account, queryClient]);
 
   const handleAreaClick = (area: string) => {
     setSelectedArea(area);
