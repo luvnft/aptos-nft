@@ -8,7 +8,7 @@ import { useGetCollections } from "@/hooks/useGetCollections";
 // Internal constants
 import { NETWORK } from "@/constants";
 import { IpfsImage } from "@/components/IpfsImage";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { LabeledInput } from "@/components/ui/labeled-input";
 import { Button } from "@/components/ui/button";
@@ -16,9 +16,10 @@ import { mintNFT } from "@/entry-functions/mint_nft";
 import { addCombinationRule } from "@/entry-functions/add_combination_rule";
 import { aptosClient } from "@/utils/aptosClient";
 import { convertIpfsUriToCid } from "@/utils/convertIpfsUriToCid";
-import { CollectionMetadata, ImageMetadata, ipfs } from "@/utils/assetsUploader";
+import { ImageMetadata, ipfs } from "@/utils/assetsUploader";
 import { getIpfsJsonContent } from "@/utils/getIpfsJsonContent";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { getNumberActiveNFTs } from "@/view-functions/get_number_active_nfts";
 
 export function Collections() {
   const collections: Array<GetCollectionDataResponse> = useGetCollections();
@@ -67,20 +68,24 @@ export const CollectionRow = ({ collection, isDetail }: CollectionRowProps) => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  // collection metadata
-  const [metadata, setMetadata] = useState<CollectionMetadata>();
-  useEffect(() => {
-    const fetchContent = async () => {
+  // fetch collection metadata and minted nfts amount
+  const dataQuery = useQuery({
+    queryKey: ["collection", collection.collection_id],
+    queryFn: async () => {
       try {
-        const parsedJson = await getIpfsJsonContent(collection.uri);
-        setMetadata(parsedJson);
-      } catch (error) {
-        console.error("Error fetching content from IPFS:", error);
-      }
-    };
+        const data = await Promise.all([
+          getIpfsJsonContent(collection.uri),
+          getNumberActiveNFTs({ collection_id: collection.collection_id }),
+        ]);
 
-    fetchContent();
-  }, [collection]);
+        return data;
+      } catch (error) {
+        console.error("Error fetching collection data:", error);
+        return [null, null];
+      }
+    },
+  });
+  const [metadata, mintedNfts] = dataQuery.data || [undefined, undefined];
 
   const [isUploading, setIsUploading] = useState(false);
 
@@ -107,8 +112,8 @@ export const CollectionRow = ({ collection, isDetail }: CollectionRowProps) => {
       setIsUploading(true);
 
       // Get the next token metadata based on the number of tokens already minted
-      const totalMinted = collection.total_minted_v2;
-      const nextTokenIndex = totalMinted + 1; // e.g., if 2 tokens minted, next is 3.json
+      const totalMinted = await getNumberActiveNFTs({ collection_id: collection.collection_id }); // refetch the number of minted NFTs
+      const nextTokenIndex = Number(totalMinted) + 1; // e.g., if 2 tokens minted, next is 3.json
       const cid = convertIpfsUriToCid(collection.uri).replace("/collection.json", ""); // Get the CID for the collection
       const tokenMetadataUrl = `${cid}/${nextTokenIndex}.json`; // Build the URL for the next token metadata
 
@@ -219,7 +224,7 @@ export const CollectionRow = ({ collection, isDetail }: CollectionRowProps) => {
             {collection?.collection_id}
           </Link>
         </TableCell>
-        <TableCell>{collection?.total_minted_v2}</TableCell>
+        <TableCell>{mintedNfts}</TableCell>
         <TableCell>{collection?.max_supply}</TableCell>
       </TableRow>
       {isDetail && (
