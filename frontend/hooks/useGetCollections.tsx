@@ -1,7 +1,7 @@
-import { AccountAddress, GetCollectionDataResponse } from "@aptos-labs/ts-sdk";
-import { useState, useEffect } from "react";
+import { AccountAddress } from "@aptos-labs/ts-sdk";
 
 import { aptosClient } from "@/utils/aptosClient";
+import { useQuery } from "@tanstack/react-query";
 
 /**
  * A react hook to get all collections under the current contract.
@@ -11,23 +11,25 @@ import { aptosClient } from "@/utils/aptosClient";
  *
  */
 export function useGetCollections() {
-  const [collections, setCollections] = useState<Array<GetCollectionDataResponse>>([]);
+  const collectionsQuery = useQuery({
+    queryKey: ["collections"],
+    queryFn: async () => {
+      try {
+        // fetch the contract registry address
+        const registry = await getRegistry();
+        // fetch collections objects created under that contract registry address
+        const objects = await getObjects(registry);
+        // get each collection object data
+        const collections = await getCollections(objects);
+        return collections;
+      } catch (error) {
+        console.error("Error fetching collections:", error);
+        return [];
+      }
+    },
+  });
 
-  useEffect(() => {
-    async function run() {
-      // fetch the contract registry address
-      const registry = await getRegistry();
-      // fetch collections objects created under that contract registry address
-      const objects = await getObjects(registry);
-      // get each collection object data
-      const collections = await getCollections(objects);
-      setCollections(collections);
-    }
-
-    run();
-  }, []);
-
-  return collections;
+  return collectionsQuery?.data || [];
 }
 
 const getRegistry = async () => {
