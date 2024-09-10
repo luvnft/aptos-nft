@@ -2,7 +2,7 @@ import { OurTeamSection } from "@/pages/Mint/components/OurTeamSection";
 import { Socials } from "@/pages/Mint/components/Socials";
 
 import { Header } from "@/components/Header";
-import { HeroImageSection } from "./components/HeroImageSection";
+import { HeroSection } from "./components/HeroSection";
 
 export function Mint() {
   return (
@@ -10,7 +10,7 @@ export function Mint() {
       <Header />
       <div style={{ overflow: "hidden" }} className="overflow-hidden">
         <main className="flex flex-col gap-10 md:gap-16">
-          <HeroImageSection />
+          <HeroSection />
           <OurTeamSection />
         </main>
 

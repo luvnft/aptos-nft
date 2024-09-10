@@ -2,7 +2,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { GetCollectionDataResponse } from "@aptos-labs/ts-sdk";
 // Internal components
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { LaunchpadHeader } from "@/components/LaunchpadHeader";
 // Internal hooks
 import { useGetCollections } from "@/hooks/useGetCollections";
 // Internal constants
@@ -20,13 +19,14 @@ import { ImageMetadata, ipfs } from "@/utils/assetsUploader";
 import { getIpfsJsonContent } from "@/utils/getIpfsJsonContent";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getNumberActiveNFTs } from "@/view-functions/get_number_active_nfts";
+import { Header } from "@/components/Header";
 
 export function Collections() {
   const collections: Array<GetCollectionDataResponse> = useGetCollections();
 
   return (
     <>
-      <LaunchpadHeader title="All Collections" />
+      <Header />
       <div className="max-w-screen-xl mx-auto py-3 bg-primary-foreground/90 rounded-xl text-primary overflow-hidden">
         <Table>
           {!collections.length && (
