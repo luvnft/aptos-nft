@@ -5,7 +5,7 @@ interface HeroSectionProps {}
 export const HeroSection: React.FC<HeroSectionProps> = () => {
   return (
     <section>
-      <div className="mx-auto xl:max-w-screen-xl xl:px-4 xl:w-3/4 xl:min-w-[64rem] lg:max-w-5xl">
+      <div className="mx-auto xl:max-w-screen-xl xl:px-4">
         <img src={HeroImage} alt="" />
       </div>
       <div className="mx-auto xl:max-w-screen-xl xl:px-4 xl:w-3/4 xl:min-w-[64rem] lg:max-w-5xl w-11/12 mt-8">
