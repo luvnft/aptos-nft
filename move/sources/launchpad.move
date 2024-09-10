@@ -867,7 +867,8 @@ module launchpad_addr::launchpad {
         let collection_owner_obj_signer =
             &object::generate_signer_for_extending(&collection_owner_config.extend_ref);
 
-        let next_nft_id = *option::borrow(&collection::count(collection_obj)) + 1;
+        let next_nft_id = nft_counter.nfts + 1;
+        // let next_nft_id = *option::borrow(&collection::count(collection_obj)) + 1;
 
         let collection_uri = collection::uri(collection_obj);
         let nft_metadata_uri = construct_nft_metadata_uri(&collection_uri, next_nft_id);
