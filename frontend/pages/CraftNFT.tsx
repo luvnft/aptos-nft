@@ -11,6 +11,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useGetCollections } from "@/hooks/useGetCollections";
 import { GetCollectionDataResponse } from "@aptos-labs/ts-sdk";
 import { Header } from "@/components/Header";
+import CraftBtnActive from "@/assets/img/craft_btn_active.png";
+import CraftBtnInactive from "@/assets/img/craft_btn_inactive.png";
 
 interface NFT {
   id: string;
@@ -153,29 +155,37 @@ export function CraftNFT() {
     }
   };
 
+  const isSubmitDisabled = isUploading || !account || !selectedNFT1 || !selectedNFT2;
+
   return (
     <>
       <Header />
 
       <div className="container mx-auto p-4 pb-16">
-        <h2 className="text-3xl mb-8 text-center font-bold">Combine Your NFTs</h2>
-        <div className="bg-summoningBoard bg-center bg-[length:120%] bg-no-repeat relative before:content-[''] before:block before:pt-[59%]">
-          <div className="absolute w-full h-full top-0 left-0 pt-[16.5%]">
+        <h2 className="text-3xl text-center font-bold">Combine Your NFTs</h2>
+        <div className="bg-summoningBoard bg-center bg-[length:120%] bg-no-repeat relative before:content-[''] before:block before:pt-[70.8%] lg:mt-[-3rem] md:mt-[-2rem] sm:mt-[-1rem]">
+          <div className="absolute w-full h-full top-0 left-0 pt-[22.4%]">
             <div className="flex justify-around items-start max-w-[52rem] mx-auto w-[61%]">
               <Area selectedNFT={selectedNFT1} onClick={() => handleAreaClick("area1")} type="main" />
               <Area selectedNFT={selectedNFT2} onClick={() => handleAreaClick("area2")} type="secondary" />
             </div>
 
             {/* Submit Button */}
-            <div className="text-center pt-[1.8%] h-[14%]">
+            <div className="text-center pt-[1.65%]">
               <Button
                 variant="plain"
                 size="plain"
                 onClick={handleSubmit}
-                disabled={isUploading || !account || !selectedNFT1 || !selectedNFT2}
-                className="px-[6.8%] h-full text-vw16 font-bold"
+                disabled={isSubmitDisabled}
+                className="relative disabled:opacity-100 drop-shadow-craftBtn w-[16.5%]"
               >
-                Craft
+                <img src={CraftBtnInactive} alt="CRAFT NFT" width={273} />
+                <img
+                  src={CraftBtnActive}
+                  alt=""
+                  width={273}
+                  className={`absolute w-full h-full top-0 left-0 transition-opacity ${isSubmitDisabled ? "opacity-0" : ""}`}
+                />
               </Button>
             </div>
 

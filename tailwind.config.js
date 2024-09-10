@@ -113,7 +113,8 @@ module.exports = {
         areaCard: `url('${IMG_BASE_PATH}/back.png')`,
       },
       dropShadow: {
-        areaCard: "5px 8px 4px rgba(0, 0, 0, 0.7)",
+        areaCard: "5px 8px 4px rgba(0, 0, 0, 0.6)",
+        craftBtn: "3px 4px 4px rgba(0, 0, 0, 0.5)",
       },
     },
   },
