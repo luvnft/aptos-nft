@@ -248,17 +248,17 @@ interface AreaProps {
 
 const Area = ({ selectedNFT, onClick, type }: AreaProps) => {
   return (
-    <div className="bg-areaCard bg-contain bg-no-repeat w-1/3 relative before:content-[''] before:block before:pt-[141.31%]">
-      <div className="absolute w-full h-full top-0 left-0 p-[6.5%] cursor-pointer text-primary" onClick={onClick}>
+    <div className="w-1/3 relative before:content-[''] before:block before:pt-[141.53%]">
+      <div className="absolute w-full h-full top-0 left-0 cursor-pointer" onClick={onClick}>
+        <div className="absolute w-full h-full top-0 left-0 pointer-events-none bg-areaCard bg-contain bg-no-repeat drop-shadow-areaCard"></div>
         {selectedNFT ? (
           <div>
-            <div className="p-[9.3%]">
-              <IpfsImage ipfsUri={selectedNFT.image} />
+            <div>
+              <IpfsImage ipfsUri={selectedNFT.image} className="absolute w-full h-full top-0 left-0 object-contain" />
             </div>
-            <p className="text-center pt-[9.3%] text-vw16 font-bold">{selectedNFT.name}</p>
           </div>
         ) : (
-          <p className="absolute bottom-[19%] left-0 text-center w-full translate-y-1/2 text-vw16 font-medium">
+          <p className="absolute top-0 right-0 text-center w-full translate-y-[-120%] text-vw16 font-medium text-primary-foreground bg-gray-800/80 py-[3.5%] rounded-sm">
             Click to select the
             <br />
             {type[0].toUpperCase() + type.slice(1)} NFT
