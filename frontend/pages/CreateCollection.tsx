@@ -10,13 +10,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
-import { LaunchpadHeader } from "@/components/LaunchpadHeader";
 import { UploadSpinner } from "@/components/UploadSpinner";
 import { LabeledInput } from "@/components/ui/labeled-input";
 import { DateTimeInput } from "@/components/ui/date-time-input";
 // Entry functions
 import { createCollection } from "@/entry-functions/create_collection";
 import { useQueryClient } from "@tanstack/react-query";
+import { Header } from "@/components/Header";
 
 export function CreateCollection() {
   // Wallet Adapter provider
@@ -130,7 +130,7 @@ export function CreateCollection() {
 
   return (
     <>
-      <LaunchpadHeader title="Create New Collection" />
+      <Header />
 
       <div className="flex flex-col md:flex-row items-start justify-between px-4 py-8 gap-4 max-w-screen-xl mx-auto bg-primary-foreground/90 rounded-xl text-primary">
         <div className="w-full md:w-2/3 flex flex-col gap-y-5 order-2 md:order-1">

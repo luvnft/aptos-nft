@@ -1,4 +1,3 @@
-import { LaunchpadHeader } from "@/components/LaunchpadHeader";
 import { aptosClient } from "@/utils/aptosClient";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { useEffect, useState } from "react";
@@ -11,6 +10,7 @@ import { getIpfsJsonContent } from "@/utils/getIpfsJsonContent";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useGetCollections } from "@/hooks/useGetCollections";
 import { GetCollectionDataResponse } from "@aptos-labs/ts-sdk";
+import { Header } from "@/components/Header";
 
 interface NFT {
   id: string;
@@ -155,7 +155,7 @@ export function CraftNFT() {
 
   return (
     <>
-      <LaunchpadHeader title="Craft NFT" />
+      <Header />
 
       <div className="container mx-auto p-4 pb-16">
         <h2 className="text-3xl mb-8 text-center font-bold">Combine Your NFTs</h2>
