@@ -38,10 +38,10 @@ export function Header() {
           return (
             <Link
               key={i}
-              className={`${buttonVariants({ variant: "link" })} ${item.link === location.pathname ? "underline" : ""}`}
+              className={`${buttonVariants({ variant: "link" })} ${item.link === location.pathname ? "underline" : ""} font-semibold`}
               to={item.link}
             >
-              {item.name}
+              {item.name.toUpperCase()}
             </Link>
           );
         })}
