@@ -204,7 +204,7 @@ export function CraftNFT() {
                     overflow: "auto",
                   }}
                 >
-                  <Dialog.Title className="text-xl text-center mb-4 font-bold">Select an NFT</Dialog.Title>
+                  <Dialog.Title className="text-xl text-center mb-4 font-medium">Select an NFT</Dialog.Title>
                   <div className="grid grid-cols-3 gap-4">
                     {allNFTs.map((nft) => {
                       const isDisabled =
@@ -230,7 +230,7 @@ export function CraftNFT() {
                             </div>
                             {isDisabled && <div className="absolute inset-0 bg-black opacity-80"></div>}
                           </div>
-                          <p className={`text-center pt-2 font-medium ${isDisabled ? "opacity-50" : ""}`}>{nft.name}</p>
+                          <p className={`text-center pt-2 ${isDisabled ? "opacity-50" : ""}`}>{nft.name}</p>
                         </div>
                       );
                     })}
