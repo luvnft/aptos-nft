@@ -1,6 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { WalletSelector } from "./WalletSelector";
 import { buttonVariants } from "@/components/ui/button";
+import Logo from "@/assets/img/logo.png";
 
 const NavList = [
   {
@@ -26,8 +27,10 @@ export function Header() {
 
   return (
     <div className="flex items-center justify-between px-4 pt-2 pb-4 max-w-screen-xl mx-auto w-full flex-wrap">
-      <h1 className="display">
-        <Link to="/">Move NFT Studio</Link>
+      <h1 className="display pt-3 pb-2">
+        <Link to="/">
+          <img src={Logo} alt="Move NFT Studio" width={250} />
+        </Link>
       </h1>
 
       <div className="flex gap-2 items-center flex-wrap">
