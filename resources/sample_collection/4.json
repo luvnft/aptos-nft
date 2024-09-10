@@ -1,10 +1,10 @@
 {
-  "name": "Basic Sword",
+  "name": "Iron Sword",
   "description": "Created on Move NFT Studio.",
   "image": "",
   "external_url": "https://gmove-nft.netlify.app/",
   "combinations": {
-    "Fire Sword": "",
-    "Water Sword": ""
+    "Flame Blade": "",
+    "Aqua Sabre": ""
   }
 }

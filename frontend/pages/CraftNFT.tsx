@@ -11,6 +11,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useGetCollections } from "@/hooks/useGetCollections";
 import { GetCollectionDataResponse } from "@aptos-labs/ts-sdk";
 import { Header } from "@/components/Header";
+import CraftBtnActive from "@/assets/img/craft_btn_active.png";
+import CraftBtnInactive from "@/assets/img/craft_btn_inactive.png";
 
 interface NFT {
   id: string;
@@ -153,29 +155,37 @@ export function CraftNFT() {
     }
   };
 
+  const isSubmitDisabled = isUploading || !account || !selectedNFT1 || !selectedNFT2;
+
   return (
     <>
       <Header />
 
       <div className="container mx-auto p-4 pb-16">
-        <h2 className="text-3xl mb-8 text-center font-bold">Combine Your NFTs</h2>
-        <div className="bg-summoningBoard bg-center bg-[length:120%] bg-no-repeat relative before:content-[''] before:block before:pt-[59%]">
-          <div className="absolute w-full h-full top-0 left-0 pt-[16.5%]">
+        <h2 className="text-3xl text-center font-bold">Combine Your NFTs</h2>
+        <div className="bg-summoningBoard bg-center bg-[length:120%] bg-no-repeat relative before:content-[''] before:block before:pt-[70.8%] lg:mt-[-3rem] md:mt-[-2rem] sm:mt-[-1rem]">
+          <div className="absolute w-full h-full top-0 left-0 pt-[22.4%]">
             <div className="flex justify-around items-start max-w-[52rem] mx-auto w-[61%]">
               <Area selectedNFT={selectedNFT1} onClick={() => handleAreaClick("area1")} type="main" />
               <Area selectedNFT={selectedNFT2} onClick={() => handleAreaClick("area2")} type="secondary" />
             </div>
 
             {/* Submit Button */}
-            <div className="text-center pt-[1.8%] h-[14%]">
+            <div className="text-center pt-[1.65%]">
               <Button
                 variant="plain"
                 size="plain"
                 onClick={handleSubmit}
-                disabled={isUploading || !account || !selectedNFT1 || !selectedNFT2}
-                className="px-[6.8%] h-full text-vw16 font-bold"
+                disabled={isSubmitDisabled}
+                className="relative disabled:opacity-100 drop-shadow-craftBtn w-[16.5%]"
               >
-                Craft
+                <img src={CraftBtnInactive} alt="CRAFT NFT" width={273} />
+                <img
+                  src={CraftBtnActive}
+                  alt=""
+                  width={273}
+                  className={`absolute w-full h-full top-0 left-0 transition-opacity ${isSubmitDisabled ? "opacity-0" : ""}`}
+                />
               </Button>
             </div>
 
@@ -248,17 +258,17 @@ interface AreaProps {
 
 const Area = ({ selectedNFT, onClick, type }: AreaProps) => {
   return (
-    <div className="bg-areaCard bg-contain bg-no-repeat w-1/3 relative before:content-[''] before:block before:pt-[141.31%]">
-      <div className="absolute w-full h-full top-0 left-0 p-[6.5%] cursor-pointer text-primary" onClick={onClick}>
+    <div className="w-1/3 relative before:content-[''] before:block before:pt-[141.53%]">
+      <div className="absolute w-full h-full top-0 left-0 cursor-pointer" onClick={onClick}>
+        <div className="absolute w-full h-full top-0 left-0 pointer-events-none bg-areaCard bg-contain bg-no-repeat drop-shadow-areaCard"></div>
         {selectedNFT ? (
           <div>
-            <div className="p-[9.3%]">
-              <IpfsImage ipfsUri={selectedNFT.image} />
+            <div>
+              <IpfsImage ipfsUri={selectedNFT.image} className="absolute w-full h-full top-0 left-0 object-contain" />
             </div>
-            <p className="text-center pt-[9.3%] text-vw16 font-bold">{selectedNFT.name}</p>
           </div>
         ) : (
-          <p className="absolute bottom-[19%] left-0 text-center w-full translate-y-1/2 text-vw16 font-medium">
+          <p className="absolute top-0 right-0 text-center w-full translate-y-[-120%] text-vw16 font-medium text-primary-foreground bg-gray-800/80 py-[3.5%] rounded-sm">
             Click to select the
             <br />
             {type[0].toUpperCase() + type.slice(1)} NFT

@@ -110,7 +110,11 @@ module.exports = {
       backgroundImage: {
         bg: `url('${IMG_BASE_PATH}/bg.webp')`,
         summoningBoard: `url('${IMG_BASE_PATH}/summoning_board.webp')`,
-        areaCard: `url('${IMG_BASE_PATH}/card.png')`,
+        areaCard: `url('${IMG_BASE_PATH}/back.png')`,
+      },
+      dropShadow: {
+        areaCard: "5px 8px 4px rgba(0, 0, 0, 0.6)",
+        craftBtn: "3px 4px 4px rgba(0, 0, 0, 0.5)",
       },
     },
   },
