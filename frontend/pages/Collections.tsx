@@ -210,7 +210,7 @@ export const CollectionRow = ({ collection, isDetail }: CollectionRowProps) => {
       >
         <TableCell className="font-medium">
           <div className="flex items-center gap-2 flex-wrap">
-            {metadata && <IpfsImage ipfsUri={metadata.image} type="collection" />}
+            {metadata && <IpfsImage ipfsUri={metadata.image} className="w-10 h-10 object-contain" />}
             <span>{collection?.collection_name}</span>
           </div>
         </TableCell>

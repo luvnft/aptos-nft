@@ -5,10 +5,10 @@ import { useQuery } from "@tanstack/react-query";
 
 interface IpfsImageProps {
   ipfsUri: string;
-  type?: string;
+  className?: string;
 }
 
-export const IpfsImage: React.FC<IpfsImageProps> = ({ ipfsUri, type }) => {
+export const IpfsImage: React.FC<IpfsImageProps> = ({ ipfsUri, className }) => {
   const imageQuery = useQuery({
     queryKey: ["ipfsImage", ipfsUri],
     queryFn: async () => {
@@ -38,11 +38,5 @@ export const IpfsImage: React.FC<IpfsImageProps> = ({ ipfsUri, type }) => {
 
   const imageSrc = imageQuery.data;
 
-  return (
-    <div>
-      {imageSrc ? (
-        <Image src={imageSrc} rounded className={type === "collection" ? "w-10 h-10 bg-gray-100 shrink-0" : ""} />
-      ) : null}
-    </div>
-  );
+  return <div>{imageSrc ? <Image src={imageSrc} rounded className={className} /> : null}</div>;
 };
