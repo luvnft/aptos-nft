@@ -1,10 +1,10 @@
-import { LaunchpadHeader } from "@/components/LaunchpadHeader";
 import { aptosClient } from "@/utils/aptosClient";
 import { InputTransactionData, useWallet } from "@aptos-labs/wallet-adapter-react";
 import { useState } from "react";
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, useDraggable, useDroppable } from "@dnd-kit/core";
 import { SortableContext, arrayMove, useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { Header } from "@/components/Header";
 
 interface NFT {
   id: string;
@@ -94,7 +94,7 @@ export function AttachEquipNFT() {
 
   return (
     <>
-      <LaunchpadHeader title="Attach / Equip NFT" />
+      <Header />
 
       <div className="container mx-auto p-4">
         <div className="flex">
