@@ -1,5 +1,5 @@
-## 🖼️ Move NFT Studio
-
+# 🖼️ Move NFT Studio
+### Unlock Infinite Creativity with Dynamic NFTs – No Code Required.
 <h4 align="center">
   <img src="public/hero.webp" alt="Logo" />
   <br>
@@ -8,7 +8,9 @@
   <a href="https://github.com/gmove-hackers/move-nft-studio">Github</a>
 </h4>
 
-The Move NFT Studio provides a one stop shop for dynamic and composable NFT's. Creators can create collections, add combinations, evolutions and more. Users can then not only mint the NFT on the frontend, but also use the Move NFT Studio to interact with the NFT in whatever way the creator has configured it. The possibilities are endless!
+The Move language enables advanced NFT features that are unavailable in popular standards like Solidity, but accessing these capabilities require technical expertise, making it complex and costly for non-coders.
+
+The Move NFT Studio is a one stop shop for dynamic and composable NFT's. Creators can create collections, add combinations, evolutions and more. Users can then not only mint the NFT on the frontend, but also use the Move NFT Studio to interact with the NFT in whatever way the creator has configured it. The possibilities are endless!
 
 ⚙️ Built using Move, React, Vite, shadcn/ui and tailwind.
 
