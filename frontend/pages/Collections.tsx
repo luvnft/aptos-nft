@@ -20,6 +20,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { getNumberActiveNFTs } from "@/view-functions/get_number_active_nfts";
 import { Header } from "@/components/Header";
 import { useGetCollectionDetailData } from "@/hooks/useGetCollectionDetailData";
+import { Container } from "@/components/Container";
+import { PageTitle } from "@/components/PageTitle";
 
 export function Collections() {
   const collections: Array<GetCollectionDataResponse> = useGetCollections();
@@ -27,18 +29,22 @@ export function Collections() {
   return (
     <>
       <Header />
-      {collections.length === 0 && <div className="max-w-screen-xl mx-auto p-4">Loading...</div>}
-      {collections.length > 0 && (
-        <ul className="max-w-screen-xl mx-auto w-11/12 grid md:grid-cols-4 sm:grid-cols-3 grid-cols-2 gap-4">
-          {collections.map((item, i) => {
-            return (
-              <li key={i}>
-                <CollectionItem collection={item} />
-              </li>
-            );
-          })}
-        </ul>
-      )}
+
+      <Container>
+        <PageTitle text={<>Collections</>} />
+        {collections.length === 0 && <div className="">Loading...</div>}
+        {collections.length > 0 && (
+          <ul className="grid md:grid-cols-4 sm:grid-cols-3 grid-cols-2 gap-4">
+            {collections.map((item, i) => {
+              return (
+                <li key={i}>
+                  <CollectionItem collection={item} />
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </Container>
     </>
   );
 }
