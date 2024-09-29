@@ -1,4 +1,3 @@
-import { GetCollectionDataResponse } from "@aptos-labs/ts-sdk";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useGetCollections } from "@/hooks/useGetCollections";
@@ -27,12 +26,17 @@ export function useGetOwnedNFTs() {
   const { account } = useWallet();
   const queryClient = useQueryClient();
 
-  const collections: Array<GetCollectionDataResponse> = useGetCollections();
+  const { data: collections } = useGetCollections();
 
-  const nftsQuery = useQuery({
+  useEffect(() => {
+    queryClient.invalidateQueries();
+  }, [account, queryClient, collections]);
+
+  return useQuery({
     queryKey: ["nfts", account?.address],
+    enabled: !!account && !!collections,
     queryFn: async () => {
-      if (!account) return [];
+      if (!account || !collections) return null;
 
       try {
         // Fetch all tokens owned by the account using getAccountOwnedTokens
@@ -79,14 +83,8 @@ export function useGetOwnedNFTs() {
         return fetchedNFTs;
       } catch (error) {
         console.error("Failed to fetch NFTs:", error);
-        return [];
+        return null;
       }
     },
   });
-
-  useEffect(() => {
-    queryClient.invalidateQueries();
-  }, [account, queryClient, collections]);
-
-  return nftsQuery.data || [];
 }

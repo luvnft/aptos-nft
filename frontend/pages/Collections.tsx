@@ -8,7 +8,7 @@ import { Container } from "@/components/Container";
 import { PageTitle } from "@/components/PageTitle";
 
 export function Collections() {
-  const collections: Array<GetCollectionDataResponse> = useGetCollections();
+  const { data, isLoading } = useGetCollections();
 
   return (
     <>
@@ -16,10 +16,13 @@ export function Collections() {
 
       <Container>
         <PageTitle text={<>Collections</>} />
-        {collections.length === 0 && <div className="">Loading...</div>}
-        {collections.length > 0 && (
+        {isLoading ? (
+          <div className="">Loading...</div>
+        ) : !data || data.length === 0 ? (
+          <div className="">No collections found</div>
+        ) : (
           <ul className="grid md:grid-cols-4 sm:grid-cols-3 grid-cols-2 gap-4">
-            {collections.map((item, i) => {
+            {data.map((item, i) => {
               return (
                 <li key={i}>
                   <CollectionItem collection={item} />

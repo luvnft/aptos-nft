@@ -23,7 +23,7 @@ export function CraftNFT() {
   const [selectedArea, setSelectedArea] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const allNFTs = useGetOwnedNFTs();
+  const { data: allNFTs, isLoading: isNFTsLoading, isPending: isNFTsPending } = useGetOwnedNFTs();
 
   const handleAreaClick = (area: string) => {
     setSelectedArea(area);
@@ -126,36 +126,42 @@ export function CraftNFT() {
                   }}
                 >
                   <Dialog.Title className="text-xl text-center mb-4 font-medium">Select an NFT</Dialog.Title>
-                  <div className="grid grid-cols-3 gap-4">
-                    {allNFTs.map((nft) => {
-                      const isDisabled =
-                        (selectedArea === "area1" && nft.id === selectedNFT2?.id) ||
-                        (selectedArea === "area2" && nft.id === selectedNFT1?.id);
-                      const isSelectedInSameArea =
-                        (selectedArea === "area1" && nft.id === selectedNFT1?.id) ||
-                        (selectedArea === "area2" && nft.id === selectedNFT2?.id);
+                  {isNFTsLoading || isNFTsPending ? (
+                    <div className="">Loading...</div>
+                  ) : !allNFTs || allNFTs.length === 0 ? (
+                    <div className="">No NFTs found</div>
+                  ) : (
+                    <div className="grid grid-cols-3 gap-4">
+                      {allNFTs.map((nft) => {
+                        const isDisabled =
+                          (selectedArea === "area1" && nft.id === selectedNFT2?.id) ||
+                          (selectedArea === "area2" && nft.id === selectedNFT1?.id);
+                        const isSelectedInSameArea =
+                          (selectedArea === "area1" && nft.id === selectedNFT1?.id) ||
+                          (selectedArea === "area2" && nft.id === selectedNFT2?.id);
 
-                      return (
-                        <div
-                          key={nft.id}
-                          className={`${isDisabled ? "cursor-not-allowed" : "cursor-pointer"}`}
-                          onClick={() => !isDisabled && handleNFTSelect(nft)}
-                        >
+                        return (
                           <div
-                            className={`relative p-2 border ${isSelectedInSameArea ? "border-2 border-green-400" : ""}`}
+                            key={nft.id}
+                            className={`${isDisabled ? "cursor-not-allowed" : "cursor-pointer"}`}
+                            onClick={() => !isDisabled && handleNFTSelect(nft)}
                           >
                             <div
-                              className={`w-full h-full object-cover  ${isDisabled ? "opacity-50 grayscale-[50%]" : ""}`}
+                              className={`relative p-2 border ${isSelectedInSameArea ? "border-2 border-green-400" : ""}`}
                             >
-                              <IpfsImage ipfsUri={nft.image} />
+                              <div
+                                className={`w-full h-full object-cover  ${isDisabled ? "opacity-50 grayscale-[50%]" : ""}`}
+                              >
+                                <IpfsImage ipfsUri={nft.image} />
+                              </div>
+                              {isDisabled && <div className="absolute inset-0 bg-black opacity-80"></div>}
                             </div>
-                            {isDisabled && <div className="absolute inset-0 bg-black opacity-80"></div>}
+                            <p className={`text-center pt-2 ${isDisabled ? "opacity-50" : ""}`}>{nft.name}</p>
                           </div>
-                          <p className={`text-center pt-2 ${isDisabled ? "opacity-50" : ""}`}>{nft.name}</p>
-                        </div>
-                      );
-                    })}
-                  </div>
+                        );
+                      })}
+                    </div>
+                  )}
                   <div className="flex justify-end mt-6">
                     <Dialog.Close asChild>
                       <button className="px-4 py-2 bg-gray-500 text-white rounded">Cancel</button>
