@@ -5,7 +5,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 const variants = cva("text-3xl text-center font-bold", {
   variants: {
     margin: {
-      default: "mb-16",
+      default: "mb-14",
       none: "",
     },
   },

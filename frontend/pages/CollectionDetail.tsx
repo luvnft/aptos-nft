@@ -7,6 +7,8 @@ import { Table, TableBody } from "@/components/ui/table";
 import { CollectionRow, CollectionTableHeader } from "./Collections";
 import { GetCollectionDataResponse } from "@aptos-labs/ts-sdk";
 import { Header } from "@/components/Header";
+import { Container } from "@/components/Container";
+import { PageTitle } from "@/components/PageTitle";
 
 export function CollectionDetail() {
   const { collection_id } = useParams<{ collection_id: string }>();
@@ -22,20 +24,23 @@ export function CollectionDetail() {
     <>
       <Header />
 
-      {isLoading ? (
-        <div className="max-w-screen-xl mx-auto p-4">Loading...</div>
-      ) : !data ? (
-        <div className="max-w-screen-xl mx-auto p-4">Collection not found</div>
-      ) : (
-        <div className="max-w-screen-xl mx-auto py-3 bg-primary-foreground/90 rounded-xl text-primary overflow-hidden">
-          <Table>
-            <CollectionTableHeader />
-            <TableBody>
-              <CollectionRow collection={data.collection as GetCollectionDataResponse} isDetail />
-            </TableBody>
-          </Table>
-        </div>
-      )}
+      <Container>
+        <PageTitle text={<>Collection Detail</>} />
+        {isLoading ? (
+          <div className="">Loading...</div>
+        ) : !data ? (
+          <div className="">Collection not found</div>
+        ) : (
+          <div className="py-3 bg-primary-foreground/90 rounded-xl text-primary overflow-hidden">
+            <Table>
+              <CollectionTableHeader />
+              <TableBody>
+                <CollectionRow collection={data.collection as GetCollectionDataResponse} isDetail />
+              </TableBody>
+            </Table>
+          </div>
+        )}
+      </Container>
     </>
   );
 }
