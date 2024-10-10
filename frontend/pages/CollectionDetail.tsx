@@ -231,8 +231,8 @@ const CollectionRow = ({ collection, isDetail }: CollectionRowProps) => {
 
       // Once the transaction has been successfully commited to chain,
       if (committedTransactionResponse.success) {
-        // navigate to the `craft-nft` page
-        // navigate(`/craft-nft`);
+        // navigate to the `evolve-nft` page
+        navigate(`/evolve-nft`);
       }
     } catch (error) {
       alert(error);
