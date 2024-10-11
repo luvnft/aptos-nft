@@ -16,7 +16,7 @@ export const ipfs = create({
 });
 
 // Define the features you want to handle
-const FEATURES = [
+export const FEATURES = [
   {
     name: "combination",
     keyName: "combinations",
