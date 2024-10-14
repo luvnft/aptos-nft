@@ -4,7 +4,7 @@
   <img src="public/hero-02.webp" alt="Logo" />
   <br>
   <br>
-  <a href="TODO">TODO: Website</a> |
+  <a href="https://aptos-move-nft-studio.netlify.app/">Website</a> |
   <a href="https://github.com/gmove-hackers/aptos-nft-studio">Github</a>
 </h4>
 
@@ -67,7 +67,7 @@ The Move NFT Studio is a one stop shop for dynamic and composable NFT's. Creator
 This hackathon project serves as a proof of concept for Move NFT Studio. Our goal is to continue building and expanding the platform so that creators and holders can manage every aspect of their NFTs. For more details and to track progress, [visit our GitHub Issues page](https://github.com/gmove-hackers/aptos-nft-studio/issues).
 
 ## Links
-- [TODO: Deployed App]()
+- [Deployed App](https://aptos-move-nft-studio.netlify.app/)
 - [Demo video](https://rebrand.ly/move-nft-studio-demo)
 - [Pitch deck](https://docs.google.com/presentation/d/166SHLBoWVCxMQOaCA7fPwwnPoelFb6vO9JNKeuVSy6c/edit?usp=drive_link)
 - [Deployment on Aptos Testnet](https://explorer.aptoslabs.com/account/0xf41a2d08728920f8c71f3a0d0ca3f37891d2d228fb8aea9e17ee10679f3713db/modules/code/launchpad?network=testnet)
