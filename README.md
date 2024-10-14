@@ -20,13 +20,48 @@ The Move NFT Studio is a one stop shop for dynamic and composable NFT's. Creator
 
 ## Screenshots
 
-| Landing Page                   | Add Combination Rule               |
+| Landing Page                   | Add New Rule               |
 | ------------------------------ | ---------------------------- |
-| ![Screenshot](public/screenshots/ss1.png) | ![Screenshot](public/screenshots/ss3.png) |
+| ![Screenshot](public/screenshots/move1.png) | ![Screenshot](public/screenshots/move3.png) |
 
-| Combine NFTs             | Combine NFTs                  |
+| Combine NFTs             | Combine NFTs Results                 |
 | ------------------------------- | -------------------------------- |
-| ![Screenshot](public/screenshots/ss5.png) | ![Screenshot](public/screenshots/ss4.png) |
+| ![Screenshot](public/screenshots/move5.png) | ![Screenshot](public/screenshots/move6.png) |
+
+| Evolve NFTs             | Evolve NFTs Results                 |
+| ------------------------------- | -------------------------------- |
+| ![Screenshot](public/screenshots/move7.png) | ![Screenshot](public/screenshots/move8.png) |
+
+## Getting started
+
+1. Set up the .env file and fill these values:
+   ```
+   VITE_APP_NETWORK=testnet
+   VITE_COLLECTION_CREATOR_ADDRESS=0xC0FEE
+   ```
+
+2. Run the following commands from the project root to publish the Move modules:
+   ```
+   npm run move:publish
+   ```
+
+3. Install dependencies:
+   ```
+   npm install
+   ```
+
+4. Start the development server:
+   ```
+   npm run dev
+   ```
+
+5. Open http://localhost:5173/ in your browser to explore the Move NFT Studio:
+   - Create, upload, and manage unique NFT collections
+   - Modify and combine NFTs in innovative ways
+   - Evolve your digital assets with custom rules
+
+   Unleash your creativity and bring your NFT vision to life!
+
 
 ## Next steps
 This hackathon project serves as a proof of concept for Move NFT Studio. Our goal is to continue building and expanding the platform so that creators and holders can manage every aspect of their NFTs. For more details and to track progress, [visit our GitHub Issues page](https://github.com/gmove-hackers/aptos-nft-studio/issues).
