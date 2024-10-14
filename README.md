@@ -68,7 +68,7 @@ This hackathon project serves as a proof of concept for Move NFT Studio. Our goa
 
 ## Links
 - [Deployed App](https://aptos-move-nft-studio.netlify.app/)
-- [Demo video](https://rebrand.ly/move-nft-studio-demo)
+- [Demo video]([https://rebrand.ly/move-nft-studio-demo](https://www.youtube.com/watch?v=n_q-6XiElOs))
 - [Pitch deck](https://docs.google.com/presentation/d/1p24HYIaPSV_RrfspM2_iTCMhBXgl9ywv/edit?usp=sharing&ouid=107875262718829911448&rtpof=true&sd=true)
 - [Deployment on Aptos Testnet](https://explorer.aptoslabs.com/account/0xf41a2d08728920f8c71f3a0d0ca3f37891d2d228fb8aea9e17ee10679f3713db/modules/code/launchpad?network=testnet)
 
